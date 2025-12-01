@@ -2,11 +2,12 @@
 #define TOKEN_HPP 
 
 #include <string>
+#include <variant>
 
 /* The token determines what type a certain phrase or word is going to be for a character*/
 
 namespace Token {
-    enum token_type {
+    enum class token_type {
         KEYWORD_FALSE, KEYWORD_NONE, KEYWORD_TRUE,
         KEYWORD_AND, KEYWORD_AS, KEYWORD_ASSERT, KEYWORD_ASYNC, KEYWORD_AWAIT,
         KEYWORD_BREAK,
@@ -87,7 +88,9 @@ namespace Token {
 
     struct token_class {
         token_type type;
-        std::string value;  
+        std::variant<std::string_view, std::string> value;
+        size_t line;
+        size_t column;
     };
 }
 
