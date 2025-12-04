@@ -7,7 +7,7 @@
 #include <fstream>
 #include <vector>
 
-#include <token.hpp>
+#include "token.hpp"
 
 /* It turns a stream of raw characters into a stream of meaningful words 
 Lexer (Lexical Analysis): Checking spelling. (Is "appl" a word? No. Is "apple" a word? Yes.)
@@ -16,21 +16,21 @@ Lexer (Lexical Analysis): Checking spelling. (Is "appl" a word? No. Is "apple" a
 namespace Lexical {
     class lexical_class {
         private:
-            size_t postion;
+            size_t position;
             std::string_view source;
             size_t line;
             size_t column;
 
-            std::unordered_map<Token::token_type, std::string> keyword;
-            
-            void get_next();
+            std::unordered_map<std::string, Token::token_type> keyword;
+
+            void next_token();  
 
             bool is_indentation();
             bool is_string();
-            bool is_number();
+            bool is_float();
+            bool is_integer();
             bool is_whitespace();
-
-            bool is_lierals();
+            bool is_varaible();
 
         public:
             lexical_class(std::string_view source);
@@ -39,7 +39,6 @@ namespace Lexical {
             std::vector<Token::token_class> tokenize();
 
             std::string token_type_name(Token::token_class type);
-
     };
 }
 

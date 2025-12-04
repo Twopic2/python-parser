@@ -2,7 +2,7 @@
 #define TOKEN_HPP 
 
 #include <string>
-#include <variant>
+#include <unordered_map>
 
 /* The token determines what type a certain phrase or word is going to be for a character*/
 
@@ -77,6 +77,7 @@ namespace Token {
         ARROW,          // ->
         ELLIPSIS,       // ...
 
+        // Special Tokens
         NEWLINE,
         INDENT,
         DEDENT,
@@ -88,7 +89,7 @@ namespace Token {
 
     struct token_class {
         token_type type;
-        std::variant<std::string_view, std::string> value;
+        std::string value;
         size_t line;
         size_t column;
     };
