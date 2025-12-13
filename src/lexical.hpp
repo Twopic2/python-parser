@@ -25,7 +25,6 @@ namespace Lexical {
 
             void next_token();  
 
-            bool is_indentation();
             bool is_string();
             bool is_float();
             bool is_integer();

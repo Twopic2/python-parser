@@ -35,50 +35,50 @@ namespace Token {
         STRING_LITERAL,
         BYTES_LITERAL,
 
-        PLUS,           // +
-        MINUS,          // -
-        STAR,           // *
-        SLASH,          // /
-        DOUBLE_SLASH,   // //
-        PERCENT,        // %
-        POWER,          // **
-        AT,             // @
+        PLUS,
+        MINUS,
+        STAR,
+        SLASH,
+        DOUBLE_SLASH,
+        PERCENT,
+        POWER,
+        AT,
 
-        LESS,           // <
-        GREATER,        // >
-        LESS_EQUAL,     // <=
-        GREATER_EQUAL,  // >=
-        DOUBLE_EQUAL,   // ==
-        NOT_EQUAL,      // !=
+        LESS,
+        GREATER,
+        LESS_EQUAL,
+        GREATER_EQUAL,
+        DOUBLE_EQUAL,
+        NOT_EQUAL,
 
-        EQUAL,          // =
-        PLUS_EQUAL,     // +=
-        MINUS_EQUAL,    // -=
-        STAR_EQUAL,     // *=
-        SLASH_EQUAL,    // /=
-        DOUBLE_SLASH_EQUAL,  // //=
-        PERCENT_EQUAL,  // %=
-        POWER_EQUAL,    // **=
-        AT_EQUAL,       // @=
-        AMPERSAND_EQUAL,     // &=
-        PIPE_EQUAL,     // |=
-        CARET_EQUAL,    // ^=
-        LEFT_SHIFT_EQUAL,    // <<=
-        RIGHT_SHIFT_EQUAL,   // >>=
-        WALRUS,         // :=
+        EQUAL,
+        PLUS_EQUAL,
+        MINUS_EQUAL,
+        STAR_EQUAL,
+        SLASH_EQUAL,
+        DOUBLE_SLASH_EQUAL,
+        PERCENT_EQUAL,
+        POWER_EQUAL,
+        AT_EQUAL,
+        AMPERSAND_EQUAL,
+        PIPE_EQUAL,
+        CARET_EQUAL,
+        LEFT_SHIFT_EQUAL,
+        RIGHT_SHIFT_EQUAL,
+        WALRUS,
 
-        LPAREN,         // (
-        RPAREN,         // )
-        LBRACKET,       // [
-        RBRACKET,       // ]
-        LBRACE,         // {
-        RBRACE,         // }
-        COMMA,          // ,
-        COLON,          // :
-        SEMICOLON,      // ;
-        DOT,            // .
-        ARROW,          // ->
-        ELLIPSIS,       // ...
+        LPAREN,
+        RPAREN,
+        LBRACKET,
+        RBRACKET,
+        LBRACE,
+        RBRACE,
+        COMMA,
+        COLON,
+        SEMICOLON,
+        DOT,
+        ARROW,
+        ELLIPSIS,
 
         NEWLINE,
         INDENT,

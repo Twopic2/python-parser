@@ -7,10 +7,10 @@ namespace Ast {
     class ast_class {
         private:
             template<typename T>
-            struct node {
+            struct Node {
                 T data;
-                std::unique_ptr<node> left;
-                std::unique_ptr<node> right;
+                std::unique_ptr<Node> left;
+                std::unique_ptr<Node> right;
             };
         public:
     };
