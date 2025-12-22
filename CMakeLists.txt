@@ -15,7 +15,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
 file(GLOB_RECURSE SOURCES
-    "${PROJECT_SOURCE_DIR}/src/*.cpp"
+    "${PROJECT_SOURCE_DIR}/src/*.cpp",
+    "${PROJECT_SOURCE_DIR}/main.cpp"
 )
 
 add_executable(lexical_analyzer

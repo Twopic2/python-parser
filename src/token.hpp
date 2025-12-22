@@ -15,7 +15,7 @@ namespace Token {
         KEYWORD_CONTINUE,
         KEYWORD_MATCH, KEYWORD_CASE,
         KEYWORD_DEF, KEYWORD_DEL,
-        KEYWORD_ELIF, KEYWORD_ELSE, KEYWORD_EXCEPT,
+        KEYWORD_ELIF, KEYWORD_ELSE, KEYWORD_ENUM, KEYWORD_EXCEPT,
         KEYWORD_FINALLY, KEYWORD_FOR, KEYWORD_FROM,
         KEYWORD_GLOBAL,
         KEYWORD_IF, KEYWORD_IMPORT, KEYWORD_IN, KEYWORD_IS,
@@ -28,8 +28,7 @@ namespace Token {
         KEYWORD_WHILE, KEYWORD_WITH,
         KEYWORD_YIELD,
 
-        VARIABLE,
-        FUNCTION_NAME,
+        IDENTIFIER,
         INTEGER_LITERAL,
         FLOAT_LITERAL,
         STRING_LITERAL,
@@ -86,7 +85,7 @@ namespace Token {
         COMMENT,
         EOF_TOKEN,
 
-        ERROR
+        DEFAULT 
     };
 
     struct token_class {

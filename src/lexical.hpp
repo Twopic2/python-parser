@@ -1,5 +1,5 @@
 #ifndef LEXICAL_HPP
-#define LEXICAL_HPP 
+#define LEXICAL_HPP
 
 #include <string>
 #include <string_view>
@@ -9,11 +9,14 @@
 
 #include "token.hpp"
 
-/* It turns a stream of raw characters into a stream of meaningful words 
+/* It turns a stream of raw characters into a stream of meaningful words
 Lexer (Lexical Analysis): Checking spelling. (Is "appl" a word? No. Is "apple" a word? Yes.)
 */
 
 namespace Lexical {
+    // Standalone function to read file
+    std::string read_file(std::string_view filename);
+
     class lexical_class {
         private:
             size_t position;
@@ -23,14 +26,13 @@ namespace Lexical {
 
             std::unordered_map<std::string, Token::token_type> keyword;
 
-            void next_token();  
+            void next_token();
 
             bool is_string();
             bool is_float();
             bool is_integer();
             bool is_whitespace();
-            bool is_varaible();
-            bool is_function();
+            bool is_identifier();
 
         public:
             lexical_class(std::string_view source);

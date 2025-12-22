@@ -1,18 +1,114 @@
 #ifndef AST_HPP
-#define AST_HPP 
+#define AST_HPP
 
 #include <memory>
+#include <vector>
+#include <string>
+#include <variant>
+#include <string_view>
 
+#include "token.hpp"
+
+/* In the future I'm hoping to get std::variant for AST to get more advanced grammar rules  */
 namespace Ast {
+    enum class node_type {
+        PROGRAM,
+        MODULE,
+
+        EXPRESSION_STMT,
+        ASSIGNMENT,
+        AUGMENTED_ASSIGNMENT,
+        RETURN_STMT,
+        BREAK_STMT,
+        CONTINUE_STMT,
+        PASS_STMT,
+        DEL_STMT,
+        YIELD_STMT,
+        RAISE_STMT,
+        ASSERT_STMT,
+        IMPORT_STMT,
+        FROM_IMPORT_STMT,
+        GLOBAL_STMT,
+        NONLOCAL_STMT,
+
+        IF_STMT,
+        ELIF_STMT,
+        ELSE_STMT,
+        WHILE_STMT,
+        FOR_STMT,
+        TRY_STMT,
+        EXCEPT_STMT,
+        FINALLY_STMT,
+        WITH_STMT,
+        MATCH_STMT,
+        CASE_STMT,
+
+        FUNCTION_DEF,
+        CLASS_DEF,
+        LAMBDA_DEF,
+        PARAMETER,
+        PARAMETER_LIST,
+
+        BINARY_OP,
+        UNARY_OP,
+        COMPARISON,
+        LOGICAL_OP,
+        CALL_EXPR,
+        ATTRIBUTE_EXPR,
+        SUBSCRIPT_EXPR,
+
+        INTEGER_LITERAL,
+        FLOAT_LITERAL,
+        STRING_LITERAL,
+        BYTES_LITERAL,
+        TRUE_LITERAL,
+        FALSE_LITERAL,
+        NONE_LITERAL,
+
+        IDENTIFIER,
+        BLOCK,
+        ARGUMENT_LIST,
+        TUPLE,
+        LIST,
+        DICT,
+        SET
+    };
+
+    struct ast_node {
+        node_type type;
+        Token::token_class token_m;
+        std::vector<std::unique_ptr<ast_node>> children_m;
+
+        ast_node(node_type t, const std::string& val = "", size_t position = 0, size_t col = 0)
+            : type(t), token_m{Token::token_type::DEFAULT, val, position, col} {}
+
+        void add_child(std::unique_ptr<ast_node> child) {
+            children_m.push_back(std::move(child));
+        }
+    };
+
     class ast_class {
         private:
-            template<typename T>
-            struct Node {
-                T data;
-                std::unique_ptr<Node> left;
-                std::unique_ptr<Node> right;
-            };
+            std::unique_ptr<ast_node> root;
+
         public:
+            ast_class() : root(nullptr) {}
+
+            void set_root(std::unique_ptr<ast_node> node) {
+                root = std::move(node);
+            }
+
+            ast_node* get_root() const {
+                return root.get();
+            }
+
+            void clear() {
+                root.reset();
+            }
+
+            bool is_empty() const {
+                return root == nullptr;
+            }
     };
 }
 
