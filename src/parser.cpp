@@ -3,7 +3,6 @@
 #include <stdexcept>
 
 /* 
-
 Recursive descent order
 
 parse_program()        - Top level
@@ -72,53 +71,100 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse() {
     return nullptr;
 }
 
-std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_expression() {
-    if (match(Token::token_type::INTEGER_LITERAL)) {
-        auto node = std::make_unique<Ast::ast_node>(Ast::node_type::INTEGER_LITERAL,
-                                                     current_token().value,
-                                                     current_token().line,
-                                                     current_token().column);
-        consume(Token::token_type::INTEGER_LITERAL);
-        return node;
-    }
-
-    if (match(Token::token_type::FLOAT_LITERAL)) {
-        auto node = std::make_unique<Ast::ast_node>(Ast::node_type::FLOAT_LITERAL,
-                                                     current_token().value,
-                                                     current_token().line,
-                                                     current_token().column);
-        consume(Token::token_type::FLOAT_LITERAL);
-        return node;
-    }
-
-    if (match(Token::token_type::STRING_LITERAL)) {
-        auto node = std::make_unique<Ast::ast_node>(Ast::node_type::STRING_LITERAL,
-                                                     current_token().value,
-                                                     current_token().line,
-                                                     current_token().column);
-        consume(Token::token_type::STRING_LITERAL);
-        return node;
-    }
-
-    if (match(Token::token_type::IDENTIFIER)) {
-        auto node = std::make_unique<Ast::ast_node>(Ast::node_type::IDENTIFIER,
-                                                     current_token().value,
-                                                     current_token().line,
-                                                     current_token().column);
-        consume(Token::token_type::IDENTIFIER);
-        return node;
-    }
-
-    if (match(Token::token_type::LPAREN)) {
-        consume(Token::token_type::LPAREN);
-        auto expr = parse_operator();
-        consume(Token::token_type::RPAREN);
-        return expr;
-    }
-
-    throw std::runtime_error("Unexpected token: " + current_token().value +
-                           " at line " + std::to_string(current_token().line));
+void Parser::parser_class::consume_newline() {
+    consume(Token::token_type::COLON);
+    consume(Token::token_type::NEWLINE);
+    consume(Token::token_type::INDENT);
 }
+
+void Parser::parser_class::consume_line() {
+   consume(Token::token_type::NEWLINE);
+   consume(Token::token_type::INDENT); 
+}
+
+std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_expression() {
+    std::unique_ptr<Ast::ast_node> node;
+
+    switch (current_token().type) {
+        case Token::token_type::INTEGER_LITERAL: {
+            node = std::make_unique<Ast::ast_node>(Ast::node_type::INTEGER_LITERAL,
+                                                         current_token().value,
+                                                         current_token().line,
+                                                         current_token().column);
+            consume(Token::token_type::INTEGER_LITERAL);
+            break;
+        }
+
+        case Token::token_type::FLOAT_LITERAL: {
+            node = std::make_unique<Ast::ast_node>(Ast::node_type::FLOAT_LITERAL,
+                                                         current_token().value,
+                                                         current_token().line,
+                                                         current_token().column);
+            consume(Token::token_type::FLOAT_LITERAL);
+            break;
+        }
+
+        case Token::token_type::STRING_LITERAL: {
+            node = std::make_unique<Ast::ast_node>(Ast::node_type::STRING_LITERAL,
+                                                         current_token().value,
+                                                         current_token().line,
+                                                         current_token().column);
+            consume(Token::token_type::STRING_LITERAL);
+            break;
+        }
+
+        case Token::token_type::IDENTIFIER: {
+            node = std::make_unique<Ast::ast_node>(Ast::node_type::IDENTIFIER,
+                                                         current_token().value,
+                                                         current_token().line,
+                                                         current_token().column);
+            consume(Token::token_type::IDENTIFIER);
+            break;
+        }
+
+        case Token::token_type::KEYWORD_SELF: {
+            node = std::make_unique<Ast::ast_node>(Ast::node_type::SELF,
+                                                         current_token().value,
+                                                         current_token().line,
+                                                         current_token().column);
+            consume(Token::token_type::KEYWORD_SELF);
+            break;
+        }
+
+        case Token::token_type::LPAREN: {
+            consume(Token::token_type::LPAREN);
+            auto expr = parse_operator();
+            consume(Token::token_type::RPAREN);
+            return expr;
+        }
+
+        default:
+            throw std::runtime_error("Unexpected token: " + current_token().value +
+                                   " at line " + std::to_string(current_token().line));
+    }
+
+    // Handle attribute access (e.g., self.x, obj.method)
+    while (match(Token::token_type::DOT)) {
+        consume(Token::token_type::DOT);
+
+        if (!match(Token::token_type::IDENTIFIER)) {
+            throw std::runtime_error("Expected identifier after '.' at line " +
+                                   std::to_string(current_token().line));
+        }
+
+        auto attr_node = std::make_unique<Ast::ast_node>(Ast::node_type::ATTRIBUTE_EXPR,
+                                                          current_token().value,
+                                                          current_token().line,
+                                                          current_token().column);
+        consume(Token::token_type::IDENTIFIER);
+
+        attr_node->add_child(std::move(node));
+        node = std::move(attr_node);
+    }
+
+    return node;
+}
+
 
 std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_operator() {
     auto left = parse_expression();
@@ -144,44 +190,38 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_operator() {
 }
 
 std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_statement() {
-    if (match(Token::token_type::NEWLINE)) {
-        consume(Token::token_type::NEWLINE);
-        return nullptr;
-    }
+    switch (current_token().type) {
+        case Token::token_type::NEWLINE:
+            consume(Token::token_type::NEWLINE);
+            return nullptr;
 
-    if (match(Token::token_type::KEYWORD_DEF)) {
-        return parse_function_def();
-    }
+        case Token::token_type::KEYWORD_DEF:
+            return parse_function_def();
 
-    if (match(Token::token_type::KEYWORD_CLASS)) {
-        return parse_class_def();
-    }
+        case Token::token_type::KEYWORD_CLASS:
+            return parse_class();
 
-    if (match(Token::token_type::KEYWORD_IF)) {
-        return parse_if_stmt();
-    }
+        case Token::token_type::KEYWORD_IF:
+            return parse_if_stmt();
 
-    if (match(Token::token_type::KEYWORD_WHILE)) {
-        return parse_while_stmt();
-    }
+        case Token::token_type::KEYWORD_WHILE:
+            return parse_while_stmt();
 
-    if (match(Token::token_type::KEYWORD_FOR)) {
-        return parse_for_stmt();
-    }
+        case Token::token_type::KEYWORD_FOR:
+            return parse_for_stmt();
 
-    if (match(Token::token_type::KEYWORD_MATCH)) {
-        return parse_match_stmt();
-    }
+        case Token::token_type::KEYWORD_MATCH:
+            return parse_match_stmt();
 
-    if (match(Token::token_type::KEYWORD_CASE)) {
-        return parse_case();
-    }
+        case Token::token_type::KEYWORD_CASE:
+            return parse_case();
 
-    if (match(Token::token_type::KEYWORD_RETURN)) {
-        return parse_return_stmt();
-    }
+        case Token::token_type::KEYWORD_RETURN:
+            return parse_return_stmt();
 
-    return parse_assignment();
+        default:
+            return parse_assignment();
+    }
 }
 
 std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_assignment() {
@@ -240,7 +280,7 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_return_stmt() {
 std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_function_def() {
     consume(Token::token_type::KEYWORD_DEF);
 
-    if (!match(Token::token_type::IDENTIFIER)) {
+    if (!match(Token::token_type::IDENTIFIER) && !match(Token::token_type::KEYWORD_INIT)) {
         throw std::runtime_error("Expected function name at line " +
                                std::to_string(current_token().line));
     }
@@ -249,7 +289,12 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_function_def() {
                                                       current_token().value,
                                                       current_token().line,
                                                       current_token().column);
-    consume(Token::token_type::IDENTIFIER);
+
+    if (match(Token::token_type::KEYWORD_INIT)) {
+        consume(Token::token_type::KEYWORD_INIT);
+    } else {
+        consume(Token::token_type::IDENTIFIER);
+    }
 
     consume(Token::token_type::LPAREN);
 
@@ -259,23 +304,31 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_function_def() {
                                                        current_token().column);
 
     if (!match(Token::token_type::RPAREN)) {
-        if (match(Token::token_type::IDENTIFIER)) {
+        if (match(Token::token_type::IDENTIFIER) || match(Token::token_type::KEYWORD_SELF)) {
             auto param = std::make_unique<Ast::ast_node>(Ast::node_type::PARAMETER,
                                                           current_token().value,
                                                           current_token().line,
                                                           current_token().column);
-            consume(Token::token_type::IDENTIFIER);
+            if (match(Token::token_type::KEYWORD_SELF)) {
+                consume(Token::token_type::KEYWORD_SELF);
+            } else {
+                consume(Token::token_type::IDENTIFIER);
+            }
             param_list->add_child(std::move(param));
         }
 
         while (match(Token::token_type::COMMA)) {
             consume(Token::token_type::COMMA);
-            if (match(Token::token_type::IDENTIFIER)) {
+            if (match(Token::token_type::IDENTIFIER) || match(Token::token_type::KEYWORD_SELF)) {
                 auto param = std::make_unique<Ast::ast_node>(Ast::node_type::PARAMETER,
                                                               current_token().value,
                                                               current_token().line,
                                                               current_token().column);
-                consume(Token::token_type::IDENTIFIER);
+                if (match(Token::token_type::KEYWORD_SELF)) {
+                    consume(Token::token_type::KEYWORD_SELF);
+                } else {
+                    consume(Token::token_type::IDENTIFIER);
+                }
                 param_list->add_child(std::move(param));
             }
         }
@@ -290,9 +343,8 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_function_def() {
                                                  "",
                                                  current_token().line,
                                                  current_token().column);
-
-    consume(Token::token_type::NEWLINE);
-    consume(Token::token_type::INDENT);
+    
+    consume_line();
 
     while (!match(Token::token_type::DEDENT) && !is_at_end()) {
         auto stmt = parse_statement();
@@ -307,23 +359,15 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_function_def() {
     return func_node;
 }
 
-std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_class_def() {
+std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_class() {
     consume(Token::token_type::KEYWORD_CLASS);
-
-    if (!match(Token::token_type::IDENTIFIER)) {
-        throw std::runtime_error("Expected class name at line " +
-                               std::to_string(current_token().line));
-    }
-
     auto class_node = std::make_unique<Ast::ast_node>(Ast::node_type::CLASS_DEF,
                                                        current_token().value,
                                                        current_token().line,
                                                        current_token().column);
     consume(Token::token_type::IDENTIFIER);
 
-    consume(Token::token_type::COLON);
-    consume(Token::token_type::NEWLINE);
-    consume(Token::token_type::INDENT);
+    consume_newline();
 
     auto body = std::make_unique<Ast::ast_node>(Ast::node_type::BLOCK,
                                                  "",
@@ -352,9 +396,7 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_if_stmt() {
 
     if_node->add_child(parse_expression());
 
-    consume(Token::token_type::COLON);
-    consume(Token::token_type::NEWLINE);
-    consume(Token::token_type::INDENT);
+   consume_newline();
 
     auto if_body = std::make_unique<Ast::ast_node>(Ast::node_type::BLOCK,
                                                     "",
@@ -380,10 +422,7 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_if_stmt() {
 
         elif_node->add_child(parse_expression());
 
-        consume(Token::token_type::COLON);
-        consume(Token::token_type::NEWLINE);
-        consume(Token::token_type::INDENT);
-
+        consume_newline();
         auto elif_body = std::make_unique<Ast::ast_node>(Ast::node_type::BLOCK,
                                                           "",
                                                           current_token().line,
@@ -409,10 +448,7 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_if_stmt() {
                                                           current_token().column);
         consume(Token::token_type::KEYWORD_ELSE);
 
-        consume(Token::token_type::COLON);
-        consume(Token::token_type::NEWLINE);
-        consume(Token::token_type::INDENT);
-
+        consume_newline();
         auto else_body = std::make_unique<Ast::ast_node>(Ast::node_type::BLOCK,
                                                           "",
                                                           current_token().line,
@@ -443,10 +479,7 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_while_stmt() {
 
     while_node->add_child(parse_expression());
 
-    consume(Token::token_type::COLON);
-    consume(Token::token_type::NEWLINE);
-    consume(Token::token_type::INDENT);
-
+    consume_newline();
     auto body = std::make_unique<Ast::ast_node>(Ast::node_type::BLOCK,
                                                  "",
                                                  current_token().line,
@@ -485,10 +518,7 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_for_stmt() {
 
     for_node->add_child(parse_expression());
 
-    consume(Token::token_type::COLON);
-    consume(Token::token_type::NEWLINE);
-    consume(Token::token_type::INDENT);
-
+    consume_newline();
     auto body = std::make_unique<Ast::ast_node>(Ast::node_type::BLOCK,
                                                  "",
                                                  current_token().line,
@@ -516,10 +546,7 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_match_stmt() {
 
     match_node->add_child(parse_expression());
 
-    consume(Token::token_type::COLON);
-    consume(Token::token_type::NEWLINE);
-    consume(Token::token_type::INDENT);
-
+    consume_newline();
     while (match(Token::token_type::KEYWORD_CASE) && !is_at_end()) {
         auto case_stmt = parse_case();
         if (case_stmt) {
@@ -541,10 +568,7 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_case() {
 
     case_node->add_child(parse_expression());
 
-    consume(Token::token_type::COLON);
-    consume(Token::token_type::NEWLINE);
-    consume(Token::token_type::INDENT);
-
+    consume_newline();
     auto case_body = std::make_unique<Ast::ast_node>(Ast::node_type::BLOCK,
                                                           "",
                                                           current_token().line,

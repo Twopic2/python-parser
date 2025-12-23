@@ -18,6 +18,9 @@ namespace Parser {
             Ast::ast_class ast_tree;
 
             Token::token_class& current_token();
+            /* 
+            Token::token_class& previous_token();
+            */
 
             bool match(const Token::token_type& type);
 
@@ -34,7 +37,7 @@ namespace Parser {
             std::unique_ptr<Ast::ast_node> parse_statement();
 
             std::unique_ptr<Ast::ast_node> parse_function_def();
-            std::unique_ptr<Ast::ast_node> parse_class_def();
+            std::unique_ptr<Ast::ast_node> parse_class();
             std::unique_ptr<Ast::ast_node> parse_if_stmt();
             std::unique_ptr<Ast::ast_node> parse_while_stmt();
             std::unique_ptr<Ast::ast_node> parse_for_stmt();
@@ -43,6 +46,9 @@ namespace Parser {
             std::unique_ptr<Ast::ast_node> parse_assignment();
             std::unique_ptr<Ast::ast_node> parse_operator();
             std::unique_ptr<Ast::ast_node> parse_case();
+
+            void consume_newline();
+            void consume_line();
 
         public:
             parser_class(Lexical::lexical_class& lexer);

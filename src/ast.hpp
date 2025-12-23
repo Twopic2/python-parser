@@ -45,9 +45,11 @@ namespace Ast {
 
         FUNCTION_DEF,
         CLASS_DEF,
+        SELF,
         LAMBDA_DEF,
         PARAMETER,
         PARAMETER_LIST,
+        PARAMETER_DICT,
 
         BINARY_OP,
         UNARY_OP,

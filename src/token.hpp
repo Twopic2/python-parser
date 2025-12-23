@@ -27,6 +27,8 @@ namespace Token {
         KEYWORD_TRY,
         KEYWORD_WHILE, KEYWORD_WITH,
         KEYWORD_YIELD,
+        KEYWORD_SELF,
+        KEYWORD_INIT,
 
         IDENTIFIER,
         INTEGER_LITERAL,
