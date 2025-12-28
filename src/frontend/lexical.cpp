@@ -1,10 +1,10 @@
-#include "lexical.hpp"
 #include <cctype>
 #include <stdexcept>
 #include <fstream>
 #include <sstream>
 #include <iostream>
 
+#include "frontend/lexical.hpp"
 
 Lexical::lexical_class::lexical_class(std::string_view source)
     : position(0), source(source), line(1), column(0)

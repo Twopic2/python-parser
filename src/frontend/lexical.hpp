@@ -7,7 +7,7 @@
 #include <fstream>
 #include <vector>
 
-#include "token.hpp"
+#include "frontend/token.hpp"
 
 /* It turns a stream of raw characters into a stream of meaningful words
 Lexer (Lexical Analysis): Checking spelling. (Is "appl" a word? No. Is "apple" a word? Yes.)
