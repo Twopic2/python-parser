@@ -369,8 +369,8 @@ std::vector<Token::token_class> Lexical::lexical_class::tokenize() {
             case ')': type = Token::token_type::RPAREN; break;
             case '[': type = Token::token_type::LBRACKET; break;
             case ']': type = Token::token_type::RBRACKET; break;
-            case '{': type = Token::token_type::LBRACE; break;
-            case '}': type = Token::token_type::RBRACE; break;
+            case '{': type = Token::token_type::LCBRACE; break;
+            case '}': type = Token::token_type::RCBRACE; break;
             case ',': type = Token::token_type::COMMA; break;
             case ':': type = Token::token_type::COLON; break;
             case ';': type = Token::token_type::SEMICOLON; break;
@@ -475,8 +475,8 @@ std::string Lexical::lexical_class::token_type_name(Token::token_class token) {
             case Token::token_type::RPAREN: return "RPAREN";
             case Token::token_type::LBRACKET: return "LBRACKET";
             case Token::token_type::RBRACKET: return "RBRACKET";
-            case Token::token_type::LBRACE: return "LBRACE";
-            case Token::token_type::RBRACE: return "RBRACE";
+            case Token::token_type::LCBRACE: return "LCBRACE";
+            case Token::token_type::RCBRACE: return "RCBRACE";
             case Token::token_type::COMMA: return "COMMA";
             case Token::token_type::COLON: return "COLON";
             case Token::token_type::SEMICOLON: return "SEMICOLON";

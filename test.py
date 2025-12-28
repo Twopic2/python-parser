@@ -1,0 +1,30 @@
+def greet(name):
+    message = "Hello, " + name
+    print(message)
+    return message
+
+c = 1
+c += 1
+
+plus = 3 * 2 - 1
+plus2 = 1 + 2 * 3
+
+while c:
+    print("hello")
+
+def switch_case(value):
+    match value:
+        case 1:
+            return "one"
+        case 2:
+            return "two"
+        
+class new_world:
+    def __init__(self, world):
+        self.world = world
+    
+wrld = new_world("world")
+
+x = 42
+y = 3.14
+greet("World")

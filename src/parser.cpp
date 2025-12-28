@@ -133,6 +133,7 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_expression() {
 
         case Token::token_type::LBRACKET: {
             return parse_list();
+            break;
         }
         
         case Token::token_type::LPAREN: {
@@ -166,8 +167,9 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_expression() {
             consume(Token::token_type::RPAREN);
             call_node->add_child(std::move(arg_list));
             node = std::move(call_node);
+            
+            break;
         }
-
 
         default:
             throw std::runtime_error("Unexpected token: " + current_token().value +
@@ -309,7 +311,7 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_return_stmt() {
 std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_function_def() {
     consume(Token::token_type::KEYWORD_DEF);
 
-    if (!match(Token::token_type::IDENTIFIER) && !match(Token::token_type::KEYWORD_INIT)) {
+    if (!match(Token::token_type::IDENTIFIER)) {
         throw std::runtime_error("Expected function name at line " +
                                std::to_string(current_token().line));
     }
@@ -326,6 +328,9 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_function_def() {
     }
 
     consume(Token::token_type::LPAREN);
+    if (!match(Token::token_type::INDENT)) {
+        throw std::runtime_error("There is no Indent" + std::to_string(current_token().line));
+    }
 
     auto param_list = std::make_unique<Ast::ast_node>(Ast::node_type::PARAMETER_LIST,
                                                        "",
