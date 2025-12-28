@@ -7,7 +7,7 @@
 #include <variant>
 #include <string_view>
 
-#include "token.hpp"
+#include "frontend/token.hpp"
 
 /* In the future I'm hoping to get std::variant for AST to get more advanced grammar rules  */
 namespace Ast {

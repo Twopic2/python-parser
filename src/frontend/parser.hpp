@@ -1,8 +1,8 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP 
 
-#include "ast.hpp"
-#include "lexical.hpp"
+#include "frontend/ast.hpp"
+#include "frontend/lexical.hpp"
 
 /* Basically anylisis the syntax of a group of phrases */
 

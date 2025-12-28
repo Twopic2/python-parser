@@ -1,6 +1,8 @@
-#include "parser.hpp"
 #include <iostream>
 #include <stdexcept>
+#include <format>
+
+#include "frontend/parser.hpp"
 
 /* 
 Recursive descent order
@@ -339,7 +341,13 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_function_def() {
     }
 
     consume(Token::token_type::LPAREN);
+<<<<<<< HEAD:src/parser.cpp
     
+=======
+    if (!match(Token::token_type::INDENT)) {
+        throw std::runtime_error(std::format("There is no Indent at source:{}", current_token().line));
+    }
+>>>>>>> pr-1:src/frontend/parser.cpp
 
     auto param_list = std::make_unique<Ast::ast_node>(Ast::node_type::PARAMETER_LIST,
                                                        "",

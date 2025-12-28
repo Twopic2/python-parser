@@ -5,8 +5,8 @@
 #include <string_view>
 #include <string>
 
-#include "src/lexical.hpp"
-#include "src/parser.hpp"
+#include "frontend/lexical.hpp"
+#include "frontend/parser.hpp"
 
 void print_ast(const Ast::ast_node* node, int indent = 0) {
     if (!node) return;
