@@ -340,10 +340,7 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_function_def() {
         consume(Token::token_type::IDENTIFIER);
     }
 
-    consume(Token::token_type::LPAREN);    
-    if (!match(Token::token_type::INDENT)) {
-        throw std::runtime_error(std::format("There is no Indent at source:{}", current_token().line));
-    }
+    consume(Token::token_type::LPAREN);       
 
     auto param_list = std::make_unique<Ast::ast_node>(Ast::node_type::PARAMETER_LIST,
                                                        "",
