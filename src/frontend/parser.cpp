@@ -262,10 +262,27 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_statement() {
 
         case Token::token_type::KEYWORD_RETURN:
             return parse_return_stmt();
-
+        
+        case Token::token_type::KEYWORD_PASS: 
+            return parse_pass();
+            
         default:
             return parse_assignment();
     }
+}
+
+std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_pass() {
+    auto pass_node = std::make_unique<Ast::ast_node>(Ast::node_type::PASS_STMT,
+                                                     "",
+                                                     current_token().line,
+                                                     current_token().column);
+    consume(Token::token_type::KEYWORD_PASS);
+
+    if (!is_at_end() && !match(Token::token_type::NEWLINE)) {
+        pass_node->add_child(parse_expression());
+    }
+
+    return pass_node;
 }
 
 std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_assignment() {

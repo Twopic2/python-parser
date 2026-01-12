@@ -45,6 +45,7 @@ namespace Parser {
             std::unique_ptr<Ast::ast_node> parse_operator();
             std::unique_ptr<Ast::ast_node> parse_case();
             std::unique_ptr<Ast::ast_node> parse_list();
+            std::unique_ptr<Ast::ast_node> parse_pass();
             //std::unique_ptr<Ast::ast_node> parse_dict();
 
             void consume_newline();

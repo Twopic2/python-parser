@@ -3,6 +3,9 @@ def greet(name):
     print(message)
     return message
 
+def pass1():
+    pass
+
 def hello():
     def hello2():
         print("hello")
