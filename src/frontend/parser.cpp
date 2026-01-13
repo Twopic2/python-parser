@@ -277,9 +277,6 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_pass() {
                                                      current_token().line,
                                                      current_token().column);
     consume(Token::token_type::KEYWORD_PASS);
-    
-    pass_node->add_child(parse_expression());
-
     return pass_node;
 }
 
