@@ -52,7 +52,7 @@ namespace Parser {
             void consume_line();
 
         public:
-            parser_class(Lexical::lexical_class& lexer) : current_pos(0) {};
+            parser_class(Lexical::lexical_class& lexer);
 
             /* Parses the file */
             std::unique_ptr<Ast::ast_node> parse();

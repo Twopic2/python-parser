@@ -22,7 +22,7 @@ parse_if_stmt()        - If statements
 
 */
 
-Parser::parser_class::parser_class(Lexical::lexical_class& lexer) : current_pos(0) {
+Parser::parser_class::parser_class(Lexical::lexical_class& lexer) : current_pos(0)  {
     tokens = lexer.tokenize();
 
     std::cerr << "Parser constructor called" << std::endl;

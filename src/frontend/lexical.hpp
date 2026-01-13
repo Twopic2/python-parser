@@ -37,8 +37,7 @@ namespace Lexical {
             bool is_identifier();
 
         public:
-            lexical_class(std::string_view source) :
-            position(0), source(source), line(1), column(0) {};
+            lexical_class(std::string_view source);
 
             /* tokenize the input strings */
             std::vector<Token::token_class> tokenize();
