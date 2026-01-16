@@ -1,15 +1,15 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP 
 
-#include <functional>
+#include <utility>
 
 #include "frontend/ast.hpp"
 #include "frontend/lexical.hpp"
 
 /* Basically anylisis the syntax of a group of phrases */
 
-/* Left-associative would be loops 
-   Right-associative would be recursion  */
+/* Old notes sucks but its basically a top-down or LL parser*/
+
 namespace Parser {
     /* I decided upon a recursive descent appoarch */    
     class parser_class {
@@ -44,13 +44,19 @@ namespace Parser {
             std::unique_ptr<Ast::ast_node> parse_return_stmt();
             std::unique_ptr<Ast::ast_node> parse_pass();
             std::unique_ptr<Ast::ast_node> parse_try();
-
-            std::unique_ptr<Ast::ast_node> parse_assignment();
+            std::unique_ptr<Ast::ast_node> parse_break();
+            std::unique_ptr<Ast::ast_node> parse_continue(); 
+            std::unique_ptr<Ast::ast_node> parse_list();
+            
+            /* Left-associative Operators uses loops rather than recursion 
+                this would help with classifying expersions 
+            */
             std::unique_ptr<Ast::ast_node> parse_term();
             std::unique_ptr<Ast::ast_node> parse_factor();
             std::unique_ptr<Ast::ast_node> parse_power();
             std::unique_ptr<Ast::ast_node> parse_case();
-            std::unique_ptr<Ast::ast_node> parse_list();
+            std::unique_ptr<Ast::ast_node> parse_equality();
+            std::unique_ptr<Ast::ast_node> parse_assignment();
 
             std::unique_ptr<Ast::ast_node> parse_misc_expression(std::unique_ptr<Ast::ast_node> node);
             //std::unique_ptr<Ast::ast_node> parse_dict();
@@ -64,7 +70,6 @@ namespace Parser {
             /* Parses the file */
             std::unique_ptr<Ast::ast_node> parse();
             Ast::ast_class& get_ast();
-            void print();
     };
 }
 

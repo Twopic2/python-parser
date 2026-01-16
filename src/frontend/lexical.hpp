@@ -30,11 +30,11 @@ namespace Lexical {
             void next_token();
             void handle_indentation(std::vector<Token::token_class>& tokens, std::size_t start_line);
 
-            bool is_string();
-            bool is_float();
-            bool is_integer();
-            bool is_whitespace();
-            bool is_identifier();
+            bool is_string() const;
+            bool is_float() const;
+            bool is_integer() const;
+            bool is_whitespace() const;
+            bool is_identifier() const;
 
         public:
             lexical_class(std::string_view source);
@@ -42,7 +42,7 @@ namespace Lexical {
             /* tokenize the input strings */
             std::vector<Token::token_class> tokenize();
 
-            std::string token_type_name(Token::token_class type);
+            std::string token_type_name(const Token::token_class& type);
     };
 }
 

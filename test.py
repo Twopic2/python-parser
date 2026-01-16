@@ -33,7 +33,26 @@ class new_world:
     
 wrld = new_world("world")
 
-if x:
+for i in x:
+    i += 1
+    j = 0
+    z = 1
+    if i:
+        break
+    elif j:
+        continue
+    else:
+        z
+
+while i:
+    if i:
+        break
+    elif j:
+        continue
+    else:
+        z
+         
+if x == 2:
     print("no")
 elif y:
     print("hi")

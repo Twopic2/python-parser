@@ -7,7 +7,7 @@
 #include "frontend/lexical.hpp"
 
 Lexical::lexical_class::lexical_class(std::string_view source) : position(0), source(source), line(1), column(1) {
-    indent.push_back(0);  
+    indent.emplace_back(0);  
 
     keyword = {
         {"if", Token::token_type::KEYWORD_IF},
@@ -49,6 +49,10 @@ Lexical::lexical_class::lexical_class(std::string_view source) : position(0), so
         {"case", Token::token_type::KEYWORD_CASE},
     };
 }
+
+/* 
+Creating an object in place such as literals use emplace back. If the type is trivial no difference between the two. 
+*/
 
 std::string Lexical::read_file(std::string_view filename) {
     std::ifstream file(filename.data());
@@ -93,7 +97,7 @@ void Lexical::lexical_class::handle_indentation(std::vector<Token::token_class>&
     }
 }
 
-bool Lexical::lexical_class::is_whitespace() {
+bool Lexical::lexical_class::is_whitespace() const {
     if (position >= source.length()) {
         return false;
     }
@@ -102,7 +106,7 @@ bool Lexical::lexical_class::is_whitespace() {
     return c == ' ' || c == '\t'|| c == '\r';
 }
 
-bool Lexical::lexical_class::is_string() {
+bool Lexical::lexical_class::is_string() const {
     if (position >= source.length()) {
         return false;
     }
@@ -111,12 +115,12 @@ bool Lexical::lexical_class::is_string() {
     return c == '"' || c == '\'';
 }
 
-bool Lexical::lexical_class::is_float() {
+bool Lexical::lexical_class::is_float() const {
     if (position >= source.length()) {
         return false;
     }
 
-    std::size_t temp_pos = position;
+    std::size_t temp_pos { position };
     while (temp_pos < source.length() && std::isdigit(source[temp_pos])) {
         temp_pos++;
     }
@@ -136,7 +140,7 @@ bool Lexical::lexical_class::is_float() {
     return false;
 }
 
-bool Lexical::lexical_class::is_integer() {
+bool Lexical::lexical_class::is_integer() const {
     if (position >= source.length()) {
         return false;
     }
@@ -148,7 +152,7 @@ bool Lexical::lexical_class::is_integer() {
     return std::isdigit(source[position]); 
 }
 
-bool Lexical::lexical_class::is_identifier() {
+bool Lexical::lexical_class::is_identifier() const {
      if (position >= source.length()) {
         return false;
     }
@@ -442,7 +446,7 @@ std::vector<Token::token_class> Lexical::lexical_class::tokenize() {
     return tokens;
 }
 
-std::string Lexical::lexical_class::token_type_name(Token::token_class token) {
+std::string Lexical::lexical_class::token_type_name(const Token::token_class& token) {
     try {
         switch (token.type) {
             case Token::token_type::KEYWORD_FALSE: return "KEYWORD_FALSE";

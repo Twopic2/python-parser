@@ -20,6 +20,14 @@ parse_return_stmt()    - Return statements
 parse_if_stmt()        - If statements
 */
 
+
+/* 
+Left-Associative example:
+a - b - c  ≡  (a - b) - c
+Expr → Term { op Term }
+*/
+
+
 Parser::parser_class::parser_class(Lexical::lexical_class& lexer) : current_pos(0)  {
     tokens = lexer.tokenize();
 
@@ -229,6 +237,25 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_term() {
     return parse_misc_expression(std::move(left));
 }
 
+std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_equality() {
+    auto left = parse_term();
+
+    while (match(Token::token_type::DOUBLE_EQUAL) || match(Token::token_type::NOT_EQUAL)) {
+         auto op_node = std::make_unique<Ast::ast_node>(
+            Ast::node_type::EQUALITY_OP,
+            Token::token_class{Token::token_type::DEFAULT, current_token().value, current_token().line, current_token().column}
+        );
+        current_pos++;
+
+        op_node->add_child(std::move(left));
+        op_node->add_child(parse_term());
+
+        left = std::move(op_node);
+    }
+
+    return left;
+} 
+
 std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_factor() {
     auto left = parse_power();
 
@@ -303,6 +330,12 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_statement() {
         
         case Token::token_type::KEYWORD_TRY:
             return parse_try();
+
+        case Token::token_type::KEYWORD_BREAK:
+            return parse_break();
+
+        case Token::token_type::KEYWORD_CONTINUE:
+            return parse_continue();
 
         default:
             return parse_assignment();
@@ -426,7 +459,7 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_pass() {
 }
 
 std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_assignment() {
-    auto expr = parse_term();
+    auto expr = parse_equality();
 
     if (match(Token::token_type::EQUAL)) {
         auto assign_node = std::make_unique<Ast::ast_node>(
@@ -436,7 +469,7 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_assignment() {
         consume(Token::token_type::EQUAL);
 
         assign_node->add_child(std::move(expr));
-        assign_node->add_child(parse_term());
+        assign_node->add_child(parse_equality());
 
         return assign_node;
     }
@@ -451,7 +484,7 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_assignment() {
         current_pos++;
 
         aug_node->add_child(std::move(expr));
-        aug_node->add_child(parse_term());
+        aug_node->add_child(parse_equality());
 
         return aug_node;
     }
@@ -587,6 +620,24 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_class() {
     return class_node;
 }
 
+std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_break() {
+    auto break_node = std::make_unique<Ast::ast_node>(
+        Ast::node_type::BREAK_STMT,
+        Token::token_class{Token::token_type::DEFAULT, "", current_token().line, current_token().column}
+    );    
+    consume(Token::token_type::KEYWORD_BREAK);
+    return break_node; 
+}
+
+std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_continue() {
+    auto continue_node = std::make_unique<Ast::ast_node>(
+        Ast::node_type::CONTINUE_STMT,
+        Token::token_class{Token::token_type::DEFAULT, "", current_token().line, current_token().column}
+    );    
+    consume(Token::token_type::KEYWORD_CONTINUE);
+    return continue_node; 
+}
+
 std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_if_stmt() {
     auto if_node = std::make_unique<Ast::ast_node>(
         Ast::node_type::IF_STMT,
@@ -594,7 +645,7 @@ std::unique_ptr<Ast::ast_node> Parser::parser_class::parse_if_stmt() {
     );
     consume(Token::token_type::KEYWORD_IF);
 
-    if_node->add_child(parse_expression());
+    if_node->add_child(parse_equality());
 
     consume_newline();
     auto if_body = std::make_unique<Ast::ast_node>(

@@ -52,6 +52,7 @@ namespace Ast {
         PARAMETER_LIST,
         PARAMETER_DICT,
 
+        EQUALITY_OP,
         BINARY_OP,
         UNARY_OP,
         COMPARISON,
@@ -98,10 +99,6 @@ namespace Ast {
 
             ast_node* get_root() const {
                 return root.get();
-            }
-
-            void clear() {
-                root.reset();
             }
 
             bool is_empty() const {
