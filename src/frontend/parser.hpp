@@ -32,7 +32,6 @@ namespace Parser {
             std::vector<Token::token_class> tokens {};
             std::size_t current_pos {};
             Ast::ast_class ast_tree {};
-
             Token::token_class& current_token();
 
             bool match(const Token::token_type& type);
