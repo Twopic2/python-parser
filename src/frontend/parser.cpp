@@ -14,12 +14,8 @@ parse_comparator()     - Comparison (<, >, <=, >=) (right-associative)
 parse_bitwise()        - Bitwise ops (|, ^, &, <<, >>)
 parse_term()           - Addition / subtraction
 parse_factor()         - Multiplication / division
-parse_power()          - Exponentiation (right-associative)
-parse_expression()     - Literals, identifiers, primaries
-parse_misc_expression()- Attribute access, function calls
-parse_function_def()   - Function definitions
-parse_return_stmt()    - Return statements
-parse_if_stmt()        - If statements
+parse_power()          - Exponentiation 
+parse_expression()     - Literals, identifier 
 */
 
 Parser::parser_class::parser_class(Lexical::lexical_class& lexer) : current_pos(0)  {
