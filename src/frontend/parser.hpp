@@ -1,10 +1,11 @@
 #ifndef PARSER_HPP
-#define PARSER_HPP 
+#define PARSER_HPP
 
 #include <utility>
 #include <string>
 #include <format>
 #include <iostream>
+#include <concepts>
 
 #include <fmt/core.h>
 
@@ -16,7 +17,7 @@
 /* Old notes sucks but its basically a top-down or LL parser*/
 
 
-/* 
+/*
 Left-Associative example:
 a - b - c  ≡  (a - b) - c
 Expr → Term { op Term }
@@ -28,13 +29,20 @@ Expr → Base [ op Expr ]   (uses recursion, not loop)
 
 
 namespace Parser {
-    /* I decided upon a recursive descent appoarch */    
+    /* I decided upon a recursive descent appoarch */
+
+    /* Should make is a vector of bools */
+    static bool valid_constructor = false;
+
     class parser_class {
         private:
             std::vector<Token::token_class> tokens {};
             std::size_t current_pos {};
-            Ast::ast_class ast_tree {};
+            std::size_t m_previous_pos {};
+            
             Token::token_class& current_token();
+            Token::token_class& previous_token();
+
             int m_error_count;
 
             bool match(const Token::token_type& type);
@@ -43,7 +51,7 @@ namespace Parser {
             void debug_syntax_error() {
                 m_error_count++;
                 throw std::runtime_error {
-                    fmt::format("Syntax Error at: line {} column {} ", std::to_string(current_token().line), std::to_string(current_token().column)) 
+                    fmt::format("Syntax Error at: line {} column {} ", std::to_string(current_token().line), std::to_string(current_token().column))
                 };
             }
 
@@ -60,6 +68,7 @@ namespace Parser {
             template <typename ... TokenTypes>
             void consume(TokenTypes ... types) {
                 if constexpr (sizeof...(types) < 1) {
+                    m_previous_pos = current_pos;
                     current_pos++;
                     return;
                 } else {
@@ -76,43 +85,48 @@ namespace Parser {
                     }
                 }
 
+                m_previous_pos = current_pos;
                 current_pos++;
             }
 
-             // Something that produces a value 
-            std::unique_ptr<Ast::ast_node> parse_expression_types();
-            // Performs a action ex: if, while, for, return 
-            std::unique_ptr<Ast::ast_node> parse_statement();
+            // Something that produces a value
+            Ast::ExprPtr parse_expression_types();
+            // Performs a action ex: if, while, for, return
+            Ast::StmtPtr parse_statement();
 
-            std::unique_ptr<Ast::ast_node> parse_function_def();
-            std::unique_ptr<Ast::ast_node> parse_class();
-            std::unique_ptr<Ast::ast_node> parse_if_stmt();
-            std::unique_ptr<Ast::ast_node> parse_while_stmt();
-            std::unique_ptr<Ast::ast_node> parse_for_stmt();
-            std::unique_ptr<Ast::ast_node> parse_match_stmt();
-            std::unique_ptr<Ast::ast_node> parse_return_stmt();
-            std::unique_ptr<Ast::ast_node> parse_pass();
-            std::unique_ptr<Ast::ast_node> parse_try();
-            std::unique_ptr<Ast::ast_node> parse_break();
-            std::unique_ptr<Ast::ast_node> parse_continue(); 
-            std::unique_ptr<Ast::ast_node> parse_method();
-            std::unique_ptr<Ast::ast_node> parse_lambda();
+            Ast::StmtPtr parse_function_def();
+            Ast::StmtPtr parse_class();
+            Ast::StmtPtr parse_if_stmt();
+            Ast::StmtPtr parse_while_stmt();
+            Ast::StmtPtr parse_for_stmt();
+            Ast::StmtPtr parse_match_stmt();
+            Ast::StmtPtr parse_return_stmt();
+            Ast::StmtPtr parse_pass();
+            Ast::StmtPtr parse_try();
+            Ast::StmtPtr parse_break();
+            Ast::StmtPtr parse_continue();
+            Ast::StmtPtr parse_method();
+            Ast::StmtPtr parse_lambda();
+            Ast::StmtPtr parse_expression_stmt(const auto& token);
 
-            std::unique_ptr<Ast::ast_node> parse_list();
-            std::unique_ptr<Ast::ast_node> parse_dict();
+            Ast::ExprPtr parse_list();
+            Ast::ExprPtr parse_dict();
 
-            std::unique_ptr<Ast::ast_node> parse_call_expr();
-            std::unique_ptr<Ast::ast_node> parse_attribute_expr();
-            std::unique_ptr<Ast::ast_node> parse_self();
+            Ast::ExprPtr parse_call_expr(Ast::ExprPtr callee);
+            Ast::ExprPtr parse_constructor_call(Ast::ExprPtr constructor);
+            Ast::ExprPtr parse_attribute_expr();
+            Ast::ExprPtr parse_self();
 
-            std::unique_ptr<Ast::ast_node> parse_term();
-            std::unique_ptr<Ast::ast_node> parse_factor();
-            std::unique_ptr<Ast::ast_node> parse_power();
-            std::unique_ptr<Ast::ast_node> parse_case();
-            std::unique_ptr<Ast::ast_node> parse_equality();
-            std::unique_ptr<Ast::ast_node> parse_comparator();
-            std::unique_ptr<Ast::ast_node> parse_assignment();
-            std::unique_ptr<Ast::ast_node> parse_bitwise();
+            Ast::ExprPtr parse_term();
+            Ast::ExprPtr parse_factor();
+            Ast::ExprPtr parse_power();
+            Ast::StmtPtr parse_case();
+            Ast::ExprPtr parse_equality();
+            Ast::ExprPtr parse_comparator();
+            Ast::ExprPtr parse_assignment();
+            Ast::ExprPtr parse_bitwise();
+
+            Ast::Block parse_block();
 
             void consume_newline();
             void consume_line();
@@ -121,8 +135,7 @@ namespace Parser {
             parser_class(Lexical::lexical_class& lexer);
 
             /* Parses the file */
-            std::unique_ptr<Ast::ast_node> parse();
-            Ast::ast_class& get_ast();
+            Ast::Program parse();
     };
 }
 
