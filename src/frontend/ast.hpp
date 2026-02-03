@@ -34,6 +34,8 @@ namespace Ast {
     struct DictExpr;
     struct SelfExpr;
     struct ConstructorCallExpr;
+    struct OrOp;
+    struct AndOp;
 
     /* Forward Decl - Statements */
     struct StmtNode;
@@ -62,7 +64,8 @@ namespace Ast {
 
     /* why is std::variant such a pain to debug */
     using Literals = std::variant<IntegerLiteral, FloatLiteral, StringLiteral>;
-    using OperatorsType = std::variant<AssignmentOp, AugmentedAssignmentOp, FactorOp, TermOp, BitwiseOp, EqualityOp, ComparisonOp, PowerOp>;
+    using OperatorsType = std::variant<AssignmentOp, AugmentedAssignmentOp, FactorOp, 
+            TermOp, BitwiseOp, EqualityOp, ComparisonOp, PowerOp, OrOp, AndOp>;
 
     /* Begin Node define */
 
@@ -80,6 +83,18 @@ namespace Ast {
 
     struct Identifier {
         Token::token_class token;
+    };
+
+    struct AndOp {
+        Token::token_class op;
+        ExprPtr left;
+        ExprPtr right;
+    };
+
+    struct OrOp {
+        Token::token_class op;
+        ExprPtr left;
+        ExprPtr right;
     };
 
     struct FactorOp {

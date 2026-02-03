@@ -9,6 +9,8 @@ Recursive descent order
 parse_program()        - Top level
 parse_statement()      - Statement dispatcher
 parse_assignment()     - Assignments
+parse_logical_or()      // or
+parse_logical_and()     // and
 parse_equality()       - Equality (==, !=)
 parse_comparator()     - Comparison (<, >, <=, >=)
 parse_bitwise()        - Bitwise ops (|, ^, &, <<, >>)
@@ -137,7 +139,7 @@ Ast::ExprPtr Parser::parser_class::parse_expression_types() {
 
         case Token::token_type::LPAREN: {
             consume(Token::token_type::LPAREN);
-            expr = parse_equality();
+            expr = parse_logical_or();
             consume(Token::token_type::RPAREN);
             break;
         }
@@ -481,7 +483,7 @@ Ast::StmtPtr Parser::parser_class::parse_pass() {
 }
 
 Ast::ExprPtr Parser::parser_class::parse_assignment() {
-    auto left = parse_equality();
+    auto left = parse_logical_or();
 
     if (match(Token::token_type::EQUAL)) {
         Token::token_class token = current_token();
@@ -657,12 +659,12 @@ Ast::StmtPtr Parser::parser_class::parse_if_stmt() {
     Token::token_class token = current_token();
     consume(Token::token_type::KEYWORD_IF);
 
-    auto condition = parse_equality();
+    auto condition = parse_logical_or();
 
     consume_newline();
     Ast::Block body = parse_block();
 
-    std::vector<Ast::ElifStmt> elifs;
+    std::vector<Ast::ElifStmt>  elifs {};
     while (match(Token::token_type::KEYWORD_ELIF)) {
         Token::token_class elif_token = current_token();
         consume(Token::token_type::KEYWORD_ELIF);
@@ -697,7 +699,7 @@ Ast::StmtPtr Parser::parser_class::parse_while_stmt() {
     Token::token_class token = current_token();
     consume(Token::token_type::KEYWORD_WHILE);
 
-    auto condition = parse_equality();
+    auto condition = parse_logical_or();
 
     consume_newline();
     Ast::Block body = parse_block();
@@ -831,4 +833,32 @@ Ast::ExprPtr Parser::parser_class::parse_dict() {
     consume(Token::token_type::RCBRACE);
     auto dict_node = std::make_unique<Ast::ExprNode>(Ast::ExprNode{std::move(dict)});
     return dict_node;
+}
+
+Ast::ExprPtr Parser::parser_class::parse_logical_and() {
+    auto left = parse_equality();
+
+    while (match(Token::token_type::KEYWORD_AND)) {
+        Token::token_class op { current_token() };
+        consume();
+
+        Ast::AndOp and_op{op, std::move(left), parse_equality()};
+        left = std::make_unique<Ast::ExprNode>(Ast::ExprNode{std::move(and_op)});
+    }
+
+    return left;
+}
+
+Ast::ExprPtr Parser::parser_class::parse_logical_or() {
+    auto left = parse_logical_and();
+
+    while (match(Token::token_type::KEYWORD_OR)) {
+        Token::token_class op { current_token() };
+        consume();
+
+        Ast::OrOp or_op{op, std::move(left), parse_logical_and()};
+        left = std::make_unique<Ast::ExprNode>(Ast::ExprNode{std::move(or_op)});
+    }
+
+    return left;
 }

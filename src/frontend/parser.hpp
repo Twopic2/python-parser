@@ -43,7 +43,7 @@ namespace Parser {
             Token::token_class& current_token();
             Token::token_class& previous_token();
 
-            int m_error_count;
+            int m_error_count {};
 
             bool match(const Token::token_type& type);
 
@@ -125,6 +125,8 @@ namespace Parser {
             Ast::ExprPtr parse_comparator();
             Ast::ExprPtr parse_assignment();
             Ast::ExprPtr parse_bitwise();
+            Ast::ExprPtr parse_logical_or();
+            Ast::ExprPtr parse_logical_and();
 
             Ast::Block parse_block();
 

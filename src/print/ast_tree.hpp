@@ -86,6 +86,20 @@ inline void print_expr_node(const Ast::PowerOp& node, int depth) {
     if (node.exponent) print_expr(node.exponent, depth + 1);
 }
 
+inline void print_expr_node(const Ast::AndOp& node, int depth) {
+    print_indent(depth);
+    fmt::print("AndOp: {}\n", token_value(node.op));
+    if (node.left) print_expr(node.left, depth + 1);
+    if (node.right) print_expr(node.right, depth + 1);
+}
+
+inline void print_expr_node(const Ast::OrOp& node, int depth) {
+    print_indent(depth);
+    fmt::print("OrOp: {}\n", token_value(node.op));
+    if (node.left) print_expr(node.left, depth + 1);
+    if (node.right) print_expr(node.right, depth + 1);
+}
+
 inline void print_expr_node(const Ast::AssignmentOp& node, int depth) {
     print_indent(depth);
     fmt::print("AssignmentOp: {}\n", token_value(node.token));
