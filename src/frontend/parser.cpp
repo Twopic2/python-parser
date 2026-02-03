@@ -225,7 +225,7 @@ Ast::ExprPtr Parser::parser_class::parse_comparator() {
     auto left = parse_bitwise();
 
     if (match(Token::token_type::GREATER, Token::token_type::GREATER_EQUAL, Token::token_type::LESS, Token::token_type::LESS_EQUAL)) {
-        Token::token_class op = current_token();
+        Token::token_class op { current_token() };
         consume(current_token().type);
 
         Ast::ComparisonOp comp{op, std::move(left), parse_comparator()};
@@ -240,7 +240,7 @@ Ast::ExprPtr Parser::parser_class::parse_term() {
     auto left = parse_factor();
 
     while (match(Token::token_type::PLUS, Token::token_type::MINUS)) {
-        Token::token_class op = current_token();
+        Token::token_class op { current_token() };
         consume(current_token().type);
 
         Ast::TermOp term{op, std::move(left), parse_factor()};
@@ -254,7 +254,7 @@ Ast::ExprPtr Parser::parser_class::parse_equality() {
     auto left = parse_comparator();
 
     while (match(Token::token_type::DOUBLE_EQUAL, Token::token_type::NOT_EQUAL)) {
-        Token::token_class op = current_token();
+        Token::token_class op { current_token() };
         consume();
 
         Ast::EqualityOp eq{op, std::move(left), parse_comparator()};
@@ -268,7 +268,7 @@ Ast::ExprPtr Parser::parser_class::parse_factor() {
     auto left = parse_power();
 
     while (match(Token::token_type::STAR, Token::token_type::SLASH, Token::token_type::DOUBLE_SLASH, Token::token_type::PERCENT)) {
-        Token::token_class op = current_token();
+        Token::token_class op { current_token() };
         consume();
 
         Ast::FactorOp factor{op, std::move(left), parse_power()};
@@ -282,7 +282,7 @@ Ast::ExprPtr Parser::parser_class::parse_power() {
     auto base = parse_expression_types();
 
     if (match(Token::token_type::POWER)) {
-        Token::token_class op = current_token();
+        Token::token_class op { current_token() };
         consume();
 
         Ast::PowerOp power{op, std::move(base), parse_power()};
@@ -297,7 +297,7 @@ Ast::ExprPtr Parser::parser_class::parse_bitwise() {
     auto left = parse_term();
 
     while (match(Token::token_type::PIPE, Token::token_type::CARET, Token::token_type::AMPERSAND, Token::token_type::LEFT_SHIFT, Token::token_type::RIGHT_SHIFT)) {
-        Token::token_class op = current_token();
+        Token::token_class op { current_token() };
         consume();
 
         Ast::BitwiseOp bitwise{op, std::move(left), parse_term()};
@@ -308,7 +308,7 @@ Ast::ExprPtr Parser::parser_class::parse_bitwise() {
 }
 
 Ast::StmtPtr Parser::parser_class::parse_lambda() {
-    Token::token_class token = current_token();
+    Token::token_class token {current_token()};
     consume(Token::token_type::KEYWORD_LAMBDA);
 
     Ast::ParameterList params;
@@ -390,7 +390,7 @@ Ast::StmtPtr Parser::parser_class::parse_statement() {
             return parse_lambda();
 
         default: {
-            Token::token_class token = current_token();
+            Token::token_class token {current_token()};
             return parse_expression_stmt(token); 
         }
     }

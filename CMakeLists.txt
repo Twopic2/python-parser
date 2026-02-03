@@ -13,6 +13,7 @@ add_library(frontend)
 target_include_directories(frontend PUBLIC ${PROJECT_SRC_DIR})
 target_sources(frontend PUBLIC ${PROJECT_SRC_DIR}/frontend/lexical.cpp ${PROJECT_SRC_DIR}/frontend/parser.cpp ${PROJECT_SRC_DIR}/frontend/ast.hpp)
 target_sources(frontend PUBLIC ${PROJECT_SRC_DIR}/print/ast_tree.hpp)
+target_link_libraries(frontend PUBLIC fmt::fmt)
 
 add_executable(lexical_analyzer)
 target_include_directories(lexical_analyzer PUBLIC ${PROJECT_SRC_DIR})
