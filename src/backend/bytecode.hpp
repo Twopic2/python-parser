@@ -28,6 +28,8 @@ namespace TwoPyOpByteCode {
         LOAD_CONSTANT
     };
 
+    // Todo: Make an Object file which madles lists functions and code objects
+
     //  Argument used as an index to map to a certain consts or vars pool 
     struct ByteCode {
         OpCode opcode;
