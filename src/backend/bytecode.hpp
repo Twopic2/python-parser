@@ -31,9 +31,11 @@ namespace TwoPyOpByteCode {
     // Todo: Make an Object file which madles lists functions and code objects
 
     //  Argument used as an index to map to a certain consts or vars pool 
+
+    /* Inside Python's bytecode 3.6 documentation. Use 2 bytes for each instruction. Previously the number of bytes varied by instruction.*/
     struct ByteCode {
         OpCode opcode;
-        std::uint16_t argument;
+        std::uint8_t argument;
     };
 
     using Value = std::variant<std::monostate, long, double, std::string>;

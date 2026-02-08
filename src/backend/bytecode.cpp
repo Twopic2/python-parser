@@ -38,7 +38,7 @@ void chunk_class::disassemble_expr(const Ast::ExprNode& expr) {
             m_bytecode.constants_pool.push_back(std::stol(integer.token.value));
             m_bytecode.instructions.push_back({
                 OpCode::LOAD_CONSTANT,
-                static_cast<std::uint16_t>(m_bytecode.constants_pool.size() - 1)
+                static_cast<std::uint8_t>(m_bytecode.constants_pool.size() - 1)
             });
         }
 
@@ -52,7 +52,7 @@ void chunk_class::disassemble_expr(const Ast::ExprNode& expr) {
                 m_bytecode.vars_pool.push_back(ident->token.value);
                 m_bytecode.instructions.push_back({
                     OpCode::STORE_VARIABLE,
-                    static_cast<std::uint16_t>(m_bytecode.vars_pool.size() - 1)
+                    static_cast<std::uint8_t>(m_bytecode.vars_pool.size() - 1)
                 });
             }
         }
