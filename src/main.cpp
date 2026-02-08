@@ -6,7 +6,9 @@
 
 #include "frontend/lexical.hpp"
 #include "frontend/parser.hpp"
-#include "print/ast_tree.hpp"
+#include "print/ast_tree.hpp"   
+#include "print/python_byte.hpp"
+#include "backend/bytecode.hpp"     
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
@@ -24,11 +26,20 @@ int main(int argc, char* argv[]) {
         Parser::parser_class parser(lexer);
         Ast::Program program = parser.parse();
 
-        fmt::print("\n=== ABSTRACT SYNTAX TREE ===\n");
+        fmt::print("\n=== ByteCode Syntax ===\n");
+        
+        TwoPyOpByteCode::chunk_class values(program);
+        TwoPyOpByteCode::FullByteCode bytecode = values.disassemble_program();
+
+        BytePrinter::print_bytecode(bytecode);
+
+        fmt::print("\n=== ByteCode End ===\n");
+
+       /*  fmt::print("\n=== ABSTRACT SYNTAX TREE ===\n");
 
         AstPrinter::print_ast(program);
 
-        fmt::print("\n=== PARSING COMPLETE ===\n");
+        fmt::print("\n=== PARSING COMPLETE ===\n"); */
 
     } catch (const std::exception& e) {
         fmt::print(stderr, "Error: {}\n", e.what());

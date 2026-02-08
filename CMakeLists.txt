@@ -23,7 +23,7 @@ target_link_libraries(frontend PUBLIC fmt::fmt)
 
 add_executable(lexical_analyzer)
 target_include_directories(lexical_analyzer PUBLIC ${PROJECT_SRC_DIR})
-target_sources(lexical_analyzer PRIVATE ${PROJECT_SRC_DIR}/main.cpp)
+target_sources(lexical_analyzer PRIVATE ${PROJECT_SRC_DIR}/main.cpp ${PROJECT_SRC_DIR}/backend/bytecode.cpp)
 
 # For working around a regression within my Homebrew LLVM 21.1.7 installs under Clang: (issue 235411) - DerkT
 if (APPLE AND LLVM_LIBRARY_DIR)
