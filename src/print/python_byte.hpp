@@ -25,7 +25,6 @@ inline const char* opcode_name(TwoPyOpByteCode::OpCode op) {
         return "UNKNOWN";
     } catch (const std::exception& e) {
         fmt::print(stderr, "Error: {}\n", e.what());
-        return 1;
     }
 }
 

@@ -5,15 +5,13 @@
 #include <vector>
 
 namespace TwoObject {
-    enum class ObjectsType {
+    enum class RuntimeDetection {
         FUNCTION,
-    }
-
-    using ObjectValue = ObjectsType;
+    };
 
     /* Insprided by Derkt's ObjectBase class which allows for Polymophric virutal representation */
     struct ObjectBase {
-        ObjectsType object_type;
+        RuntimeDetection object_type;
         virtual ~ObjectBase() = default;
     };
 
@@ -21,7 +19,7 @@ namespace TwoObject {
         public:
             std::string name;
             std::vector<std::string> parmas;
-    }
+    };
 
 }
 
