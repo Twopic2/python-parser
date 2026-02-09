@@ -39,6 +39,8 @@ inline std::string value_to_string(const TwoPyOpByteCode::Value& val) {
             return std::to_string(v);
         } else if constexpr (std::is_same_v<T, std::string>) {
             return "\"" + v + "\"";
+        } else if constexpr (std::is_same_v<T, TwoObject::RuntimeDetection>) {
+            return "<function>";
         }
     }, val);
 }

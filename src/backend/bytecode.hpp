@@ -46,7 +46,7 @@ namespace TwoPyOpByteCode {
         std::uint8_t argument;
     };
 
-    using Value = std::variant<std::monostate, long, double, std::string>;
+    using Value = std::variant<std::monostate, long, double, std::string, TwoObject::RuntimeDetection>;
 
     struct FullByteCode {
         std::vector<ByteCode> instructions;
