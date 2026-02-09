@@ -7,21 +7,26 @@
 namespace BytePrinter {
 
 inline const char* opcode_name(TwoPyOpByteCode::OpCode op) {
-    switch (op) {
-        case TwoPyOpByteCode::OpCode::RETURN:         return "RETURN";
-        case TwoPyOpByteCode::OpCode::CALL:            return "CALL";
-        case TwoPyOpByteCode::OpCode::PRINT:           return "PRINT";
-        case TwoPyOpByteCode::OpCode::ADD:             return "ADD";
-        case TwoPyOpByteCode::OpCode::SUB:             return "SUB";
-        case TwoPyOpByteCode::OpCode::MUL:             return "MUL";
-        case TwoPyOpByteCode::OpCode::DIV:             return "DIV";
-        case TwoPyOpByteCode::OpCode::POP:             return "POP";
-        case TwoPyOpByteCode::OpCode::PUSH:            return "PUSH";
-        case TwoPyOpByteCode::OpCode::STORE_VARIABLE:  return "STORE_NAME";
-        case TwoPyOpByteCode::OpCode::LOAD_VARIABLE:   return "LOAD_NAME";
-        case TwoPyOpByteCode::OpCode::LOAD_CONSTANT:   return "LOAD_CONST";
+    try {
+        switch (op) {
+            case TwoPyOpByteCode::OpCode::RETURN:         return "RETURN";
+            case TwoPyOpByteCode::OpCode::CALL:            return "CALL";
+            case TwoPyOpByteCode::OpCode::PRINT:           return "PRINT";
+            case TwoPyOpByteCode::OpCode::ADD:             return "ADD";
+            case TwoPyOpByteCode::OpCode::SUB:             return "SUB";
+            case TwoPyOpByteCode::OpCode::MUL:             return "MUL";
+            case TwoPyOpByteCode::OpCode::DIV:             return "DIV";
+            case TwoPyOpByteCode::OpCode::POP:             return "POP";
+            case TwoPyOpByteCode::OpCode::PUSH:            return "PUSH";
+            case TwoPyOpByteCode::OpCode::STORE_VARIABLE:  return "STORE_NAME";
+            case TwoPyOpByteCode::OpCode::LOAD_VARIABLE:   return "LOAD_NAME";
+            case TwoPyOpByteCode::OpCode::LOAD_CONSTANT:   return "LOAD_CONST";
+        }
+        return "UNKNOWN";
+    } catch (const std::exception& e) {
+        fmt::print(stderr, "Error: {}\n", e.what());
+        return 1;
     }
-    return "UNKNOWN";
 }
 
 inline std::string value_to_string(const TwoPyOpByteCode::Value& val) {

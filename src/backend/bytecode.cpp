@@ -1,7 +1,8 @@
 #include "backend/bytecode.hpp"
 
-using namespace TwoPyOpByteCode;
+#include <fmt/core.h>
 
+using namespace TwoPyOpByteCode;
 
 /*
 After doing some research, I found two ways of handling std::variant types
@@ -20,8 +21,12 @@ FullByteCode chunk_class::disassemble_program() {
 }
 
 void chunk_class::disassemble_instruction(const Ast::StmtPtr& stmt) {
-    disassemble_stmt(*stmt);
-}
+    try {
+        disassemble_stmt(*stmt);
+    } catch (const std::exception& e) {
+        fmt::print(stderr, "Error: {}\n", e.what());
+    }
+}   
 
 void chunk_class::disassemble_stmt(const Ast::StmtNode& stmt) {
     if (std::holds_alternative<Ast::ExpressionStmt>(stmt.node)) {
