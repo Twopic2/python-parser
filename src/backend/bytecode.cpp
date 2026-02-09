@@ -32,6 +32,13 @@ void chunk_class::disassemble_stmt(const Ast::StmtNode& stmt) {
     if (std::holds_alternative<Ast::ExpressionStmt>(stmt.node)) {
         auto& expr_stmt = std::get<Ast::ExpressionStmt>(stmt.node);
         disassemble_expr(*expr_stmt.expression);
+    } else if (std::holds_alternative<Ast::FunctionDef>(stmt.node)) {
+        auto& func_stmt = std::get<Ast::FunctionDef>(stmt.node);
+        disassemble_expr(*func_stmt.params);
+        disassemble_stmt(*func_stmt.body);
+    } else if (std::holds_alternative<Ast::ReturnStmt>(stmt.node)) {
+        auto& return_stmt = std::get<Ast::ReturnStmt>(stmt.node);
+        m_bytecode.instructions.push_back({OpCode::RETURN});
     }
 }
 

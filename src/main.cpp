@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
         Parser::parser_class parser(lexer);
         Ast::Program program = parser.parse();
 
-        fmt::print("\n=== ByteCode Syntax ===\n");
+        fmt::print("\n=== ByteCode Syntax ===\n\n");
         
         TwoPyOpByteCode::chunk_class values(program);
         TwoPyOpByteCode::FullByteCode bytecode = values.disassemble_program();

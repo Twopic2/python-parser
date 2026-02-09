@@ -7,12 +7,13 @@
 #include <deque>
 
 #include "frontend/ast.hpp"
+#include "backend/objects.hpp"
 
 namespace TwoPyOpByteCode {
     /* 
     Opcode (add, subtract, jump, whatever)
     Vars/Constant (for your STORE_VARIABLE and LOAD_CONSTANT)
-     */
+    */
     enum class OpCode : std::uint8_t {
         RETURN,
         CALL,
@@ -23,12 +24,19 @@ namespace TwoPyOpByteCode {
         DIV,
         POP,
         PUSH,
+
+        MAKE_FUNCTION,
+        CALL_FUNCTION,
+
         STORE_VARIABLE,
+        STORE_FAST, // Local vars
+
         LOAD_VARIABLE,
-        LOAD_CONSTANT
+        LOAD_FAST, // Local vars
+        LOAD_CONSTANT,
     };
 
-    // Todo: Make an Object file which madles lists functions and code objects
+    // Todo: Make an Object file which madles lists functions and code objects this will help with runtime vm
 
     //  Argument used as an index to map to a certain consts or vars pool 
 
@@ -38,7 +46,7 @@ namespace TwoPyOpByteCode {
         std::uint8_t argument;
     };
 
-    using Value = std::variant<std::monostate, long, double, std::string>;
+    using Value = std::variant<std::monostate, long, double, std::string, TwoObject::ObjectValue>;
 
     struct FullByteCode {
         std::vector<ByteCode> instructions;
