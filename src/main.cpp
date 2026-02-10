@@ -27,14 +27,11 @@ int main(int argc, char* argv[]) {
         Ast::Program program = parser.parse();
 
         fmt::print("\n=== ByteCode Syntax ===\n\n");
-        
+
         TwoPyOpByteCode::chunk_class values(program);
-        TwoPyOpByteCode::FullByteCode bytecode = values.disassemble_program();
+        auto bytecode = values.disassemble_program();
 
-        BytePrinter::print_bytecode(bytecode);
-
-        // actually this is useless but I'll add it
-        fmt::print("size of total python bytecode, {}\n", bytecode.instructions.size());
+        BytePrinter::print_all_bytecode(bytecode);
 
         fmt::print("\n=== ByteCode End ===\n");
 

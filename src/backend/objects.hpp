@@ -3,6 +3,11 @@
 
 #include <string>
 #include <vector>
+#include <memory>
+
+namespace TwoPyOpByteCode {
+    struct FullByteCode;
+}
 
 /* Each of these would be local bytecode scope */
 namespace TwoObject {
@@ -19,13 +24,13 @@ namespace TwoObject {
     class function_object : public ObjectBase {
         public:
             std::string name;
-            std::vector<std::string> parmas;
-            TwoPyOpByteCode::FullByteCode bytecode;
+            std::vector<std::string> params;
+            std::shared_ptr<TwoPyOpByteCode::FullByteCode> bytecode;
+
             function_object() {
                 runtime_type = RuntimeDetection::FUNCTION;
             }
     };
-
 }
 
 #endif

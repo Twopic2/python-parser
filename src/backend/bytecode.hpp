@@ -5,6 +5,7 @@
 #include <vector>
 #include <variant>
 #include <deque>
+#include <memory>
 
 #include "frontend/ast.hpp"
 #include "backend/objects.hpp"
@@ -27,6 +28,8 @@ namespace TwoPyOpByteCode {
 
         MAKE_FUNCTION,
         CALL_FUNCTION,
+        PUSH_NULL,		// Prepares the stack for a function call.
+        BINARY_POWER,
 
         STORE_VARIABLE,
         STORE_FAST, // Local vars
@@ -36,8 +39,6 @@ namespace TwoPyOpByteCode {
         LOAD_CONSTANT,
     };
 
-    // Todo: Make an Object file which madles lists functions and code objects this will help with runtime vm
-
     //  Argument used as an index to map to a certain consts or vars pool 
 
     /* Inside Python's bytecode 3.6 documentation. Use 2 bytes for each instruction. Previously the number of bytes varied by instruction.*/
@@ -46,9 +47,8 @@ namespace TwoPyOpByteCode {
         std::uint8_t argument;
     };
 
-    using Value = std::variant<std::monostate, long, double, std::string, TwoObject::RuntimeDetection>;
+    using Value = std::variant<std::monostate, long, double, std::string, std::shared_ptr<TwoObject::function_object>>;
 
-    /* This would be global bytecode lists */
     struct FullByteCode {
         std::vector<ByteCode> instructions;
         std::vector<Value> constants_pool;
@@ -57,8 +57,11 @@ namespace TwoPyOpByteCode {
 
     class chunk_class {
         private:
-            FullByteCode m_global_bytecode {};
-            //FullByteCode m_other_bytecode {};
+            std::vector<std::shared_ptr<FullByteCode>> m_total_bytecode {};
+            std::shared_ptr<FullByteCode> m_curr_bytecode {};
+            std::shared_ptr<FullByteCode> m_prev_bytecode {};
+
+            bool is_in_function = false;
 
             const Ast::Program& m_program;
 
@@ -66,10 +69,12 @@ namespace TwoPyOpByteCode {
             void disassemble_expr(const Ast::ExprNode& expr);
             void disassemble_stmt(const Ast::StmtNode& stmt);
 
+            void disassemble_function_object(const Ast::FunctionDef& func_stmt);
+
         public:
             chunk_class(const Ast::Program& program);
 
-            FullByteCode disassemble_program();
+            std::vector<std::shared_ptr<FullByteCode>> disassemble_program();
     };
 }
 
