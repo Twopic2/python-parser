@@ -26,12 +26,12 @@ int main(int argc, char* argv[]) {
         Parser::parser_class parser(lexer);
         Ast::Program program = parser.parse();
 
-        fmt::print("\n=== ByteCode Syntax ===\n\n");
+        fmt::print("\n=== ByteCode Compilation ===\n\n");
 
-        TwoPyOpByteCode::chunk_class values(program);
-        auto bytecode = values.disassemble_program();
+        TwoPy::Backend::compiler bytecode_compiler(program);
+        TwoPy::Backend::ByteCodeProgram bytecode_program = bytecode_compiler.disassemble_program();
 
-        BytePrinter::print_all_bytecode(bytecode);
+        BytePrinter::disassemble_program(bytecode_program);
 
         fmt::print("\n=== ByteCode End ===\n");
 

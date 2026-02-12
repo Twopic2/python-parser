@@ -7,6 +7,12 @@
 
 #include "backend/objects.hpp"
 
+/* Credit to Derkt for the complex template programming
+    Took me some time to figure out that the constructor takes in a rvalue
+ */
+
+
+
 namespace TwoPy::Backend {
     enum class ValueTag : uint8_t {
         NONE,   // C++ std::monostate
@@ -24,7 +30,7 @@ namespace TwoPy::Backend {
     class Value {
     public:
         using py_object_ptr = ObjectBase*;
-        using hidden_data = std::variant<std::monostate, long, double, Reference, py_object_ptr>; // make `str` a built-in object type?
+        using hidden_data = std::variant<std::monostate, long, double, Reference, py_object_ptr>; 
         
     private:
         template <typename NativeType>
@@ -76,7 +82,7 @@ namespace TwoPy::Backend {
             case ValueTag::BOOL:
             case ValueTag::INT: return std::get<long>(self.m_data) != 0L;
             case ValueTag::FLOAT: return std::get<double>(self.m_data) != 0.0;
-            case ValueTag::REF: return std::get<Reference>(self.m_data).to_val != nullptr;
+            case ValueTag::REF: return std::get<Reference>(self.m_data) != nullptr;
             case ValueTag::OBJ: return std::get<py_object_ptr>(self.m_data) != nullptr; // add abstract is_truthy() method for any ObjectBase behind py_object_ptr
             default: return false;
             }
@@ -94,6 +100,18 @@ namespace TwoPy::Backend {
             }
         }
 
+        constexpr double to_double(this auto&& self) noexcept {
+            switch (self.m_tag) {
+            case ValueTag::NONE: return 0.0;
+            case ValueTag::BOOL:
+            case ValueTag::INT: return static_cast<double>(std::get<long>(self.m_data));
+            case ValueTag::FLOAT: return std::get<double>(self.m_data);
+            case ValueTag::REF: return std::get<Reference>(self.m_data) != nullptr; 
+            case ValueTag::OBJ: return std::get<py_object_ptr>(self.m_data) != nullptr; // add abstract is_truthy() method for any ObjectBase behind py_object_ptr
+            default: return 0.0;
+            }
+        }
+
         constexpr Reference ref() noexcept {
             if (m_tag == ValueTag::REF) return std::get<Reference>(m_data);
             return nullptr;
@@ -105,9 +123,11 @@ namespace TwoPy::Backend {
         }
 
         constexpr ValueTag tag(this auto&& self) noexcept {
-            return self.is_truthy();
+            return self.m_tag;
         }
 
+        /* Derkt told me this will be useful for when I start making my vm and it needs to pop and push items*/
+/* 
         Value operator+(const Value& other) {
             switch (m_tag) {
             case ValueTag::NONE: return Value {};
@@ -134,7 +154,7 @@ namespace TwoPy::Backend {
             }
 
             return *this;
-        }
+        } */
 
         /// TODO: add  %, *, and / overloads with div_int()...
     };

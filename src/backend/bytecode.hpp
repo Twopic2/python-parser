@@ -8,6 +8,7 @@
 #include <map>
 
 #include "backend/value.hpp"
+#include "frontend/ast.hpp"
 
 namespace TwoPy::Backend {
     /* 
@@ -46,25 +47,39 @@ namespace TwoPy::Backend {
 
     struct Chunk {
         std::vector<Instruction> code;
-        std::vector<Value> consts;
+        std::vector<Value> consts_pool;
+        std::vector<std::string> vars_pool;
     };
 
-    struct Program {
+    struct ByteCodeProgram {
         std::string name;
         std::vector<Chunk> chunks;
     };
 
-    class Emitter {
+    class compiler {
     private:
-        /// TODO: add state to track names to constants / local slots, build the bytecode chunks, etc.
+        const Ast::Program& m_program;
+
+        Chunk* m_curr_chunk {};
+        Chunk* m_prev_chunk {};
+
+        ByteCodeProgram m_bytecode_program {};
+
+        void disassemble_instruction(const Ast::StmtPtr& stmt);
+
+        void disassemble_stmt(const Ast::StmtNode& stmt);
+        void disassemble_expr(const Ast::ExprNode& expr);
+
+        void disassemble_operators(const Ast::OperatorsType& ops);
+        void disassemble_literals(const Ast::Literals& lits);
 
     public:
         /// TODO: set up state to track names to constants / local slots, build the bytecode chunks, etc.
-        Emitter();
+        compiler(const Ast::Program& program);
 
-        /// Add AST to bytecode methods here. 
+        ByteCodeProgram disassemble_program();
 
-        [[nodiscard]] std::optional<Program> operator()();
+        [[nodiscard]] std::optional<ByteCodeProgram> operator()();
     };
 }
 

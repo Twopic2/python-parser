@@ -7,12 +7,17 @@
 namespace TwoPy::Backend {
     class Value;
 
+    /* These would be polymorphic heap object and wouldn't be primitives such as floats, bools, and ints */
+
+    /* PyObjects get compiled from the PVM and it detects whether its a default value or heap based */    
+
     enum class ObjectTag : uint8_t {
         NONE,       // non-object
         // LIST,
         // DICT,
-        // KLASS,
+        // CLASS,
         FUNCTION,   // callable object
+        STRING,
     };
 
     /* Insprided by Derkt's ObjectBase class which allows for Polymophric virutal representation */
@@ -33,6 +38,14 @@ namespace TwoPy::Backend {
 
         /// NOTE: for __str__(self)
         virtual std::string stringify() = 0;
+    };
+
+    class function_object : public ObjectBase {
+
+    };
+
+    class StringPyObject : public ObjectBase {
+
     };
 }
 

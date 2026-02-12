@@ -13,7 +13,7 @@ namespace TwoPy::Backend {
 
     public:
         /// TODO: initialize state mentioned above with program??
-        VM(const Program& prgm);
+        VM(const ByteCodeProgram& prgm);
 
         /// TODO: implement opcodes & run.
         

@@ -123,13 +123,14 @@ bool Lexical::lexical_class::is_float() const {
     }
 
     std::size_t temp_pos { m_position };
+
     while (temp_pos < m_source.length() && std::isdigit(m_source[temp_pos])) {
         temp_pos++;
     }
 
-    if (m_source[m_position] == '.') {
-        if (m_position + 1 < m_source.length() && std::isdigit(m_source[m_position + 1])) {
-            return true; 
+    if (temp_pos < m_source.length() && m_source[temp_pos] == '.') {
+        if (temp_pos + 1 < m_source.length() && std::isdigit(m_source[temp_pos + 1])) {
+            return true;
         }
     }
 
