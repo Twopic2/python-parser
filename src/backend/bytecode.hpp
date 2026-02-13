@@ -61,6 +61,8 @@ namespace TwoPy::Backend {
     private:
         const Ast::Program& m_program;
 
+        std::map<std::string, std::uint8_t> global_vars {};
+
         Chunk* m_curr_chunk {};
         Chunk* m_prev_chunk {};
 
@@ -77,11 +79,10 @@ namespace TwoPy::Backend {
         void disassemble_literals(const Ast::Literals& lits);
 
     public:
-        /// TODO: set up state to track names to constants / local slots, build the bytecode chunks, etc.
         compiler(const Ast::Program& program);
 
         ByteCodeProgram disassemble_program();
-
+        
         [[nodiscard]] std::optional<ByteCodeProgram> operator()();
     };
 }
