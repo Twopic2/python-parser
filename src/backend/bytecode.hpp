@@ -2,6 +2,7 @@
 #define TWOPY_BYTECODE_HPP
 
 #include <cstddef>
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
@@ -62,6 +63,8 @@ namespace TwoPy::Backend {
 
         Chunk* m_curr_chunk {};
         Chunk* m_prev_chunk {};
+
+        std::vector<std::unique_ptr<ObjectBase>> object_pool;
 
         ByteCodeProgram m_bytecode_program {};
 

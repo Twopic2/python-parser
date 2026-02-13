@@ -1,7 +1,7 @@
 import dis
 
 code = """
-pow = 5 ** 2
+x = "hi"
 """
 
 dis.dis(code)

@@ -46,7 +46,18 @@ namespace BytePrinter {
             case ValueTag::INT: return std::to_string(val.to_long());
             case ValueTag::FLOAT: return std::to_string(val.to_double());
             case ValueTag::REF: return "<ref>";
-            case ValueTag::OBJ: return "<object>";
+            case ValueTag::OBJ: {
+                auto obj = val.obj_ref();
+                if (!obj) {
+                    return "<null>";
+                }
+                // For strings, show them with quotes (Python-style)
+                if (obj->tag() == ObjectTag::STRING) {
+                    return "\"" + obj->stringify() + "\"";
+                }
+                // For other objects, just use their string representation
+                return "<" + obj->stringify() + ">";
+            }
             default: return "<unknown>";
         }
     }

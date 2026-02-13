@@ -109,9 +109,19 @@ namespace TwoPy::Backend {
             return;
         }
 
-        // TODO: Handle string literals
-        /*  if (auto* string_lit = std::get_if<Ast::StringLiteral>(&lits)) {
+        if (auto* string_lit = std::get_if<Ast::StringLiteral>(&lits)) {
+            auto str_obj = std::make_unique<StringPyObject>(string_lit->token.value);
+            
+            auto raw_ptr = str_obj.get();
 
-        } */
+            m_curr_chunk->consts_pool.emplace_back(raw_ptr);
+
+            object_pool.push_back(std::move(str_obj));
+
+            std::uint8_t const_index = static_cast<std::uint8_t>(m_curr_chunk->consts_pool.size() - 1);
+
+            m_curr_chunk->code.push_back({OpCode::LOAD_CONSTANT, const_index});
+            return;
+        } 
     }
 }
