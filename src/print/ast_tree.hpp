@@ -39,6 +39,11 @@ inline void print_expr_node(const Ast::StringLiteral& node, int depth) {
     fmt::print("StringLiteral: {}\n", token_value(node.token));
 }
 
+inline void print_expr_node(const Ast::BoolLiteral& node, int depth) {
+    print_indent(depth);
+    fmt::print("BoolLiteral: {}\n", token_value(node.token));
+}
+
 inline void print_expr_node(const Ast::Identifier& node, int depth) {
     print_indent(depth);
     fmt::print("Identifier: {}\n", token_value(node.token));

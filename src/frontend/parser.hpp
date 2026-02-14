@@ -106,6 +106,7 @@ namespace Parser {
             Ast::StmtPtr parse_continue();
             Ast::StmtPtr parse_method();
             Ast::StmtPtr parse_lambda();
+
             Ast::StmtPtr parse_expression_stmt(const auto& token);
 
             Ast::ExprPtr parse_list();

@@ -78,6 +78,8 @@ namespace TwoPy::Backend {
         void disassemble_operators(const Ast::OperatorsType& ops);
         void disassemble_literals(const Ast::Literals& lits);
 
+        void disassemble_function_object(const Ast::FunctionDef& function);
+
     public:
         compiler(const Ast::Program& program);
 

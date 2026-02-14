@@ -86,7 +86,7 @@ Ast::Block Parser::parser_class::parse_block() {
 }
 
 Ast::ExprPtr Parser::parser_class::parse_expression_types() {
-    Ast::ExprPtr expr;
+    Ast::ExprPtr expr {};
 
     switch (current_token().type) {
         case Token::token_type::INTEGER_LITERAL: {
@@ -107,6 +107,20 @@ Ast::ExprPtr Parser::parser_class::parse_expression_types() {
             Ast::StringLiteral lit{current_token()};
             expr = std::make_unique<Ast::ExprNode>(Ast::ExprNode{lit});
             consume(Token::token_type::STRING_LITERAL);
+            break;
+        }
+
+        case Token::token_type::KEYWORD_TRUE: {
+            Ast::BoolLiteral lit{current_token()};
+            expr = std::make_unique<Ast::ExprNode>(Ast::ExprNode{lit});
+            consume(Token::token_type::KEYWORD_TRUE);
+            break;
+        }
+
+        case Token::token_type::KEYWORD_FALSE: {
+            Ast::BoolLiteral lit{current_token()};
+            expr = std::make_unique<Ast::ExprNode>(Ast::ExprNode{lit});
+            consume(Token::token_type::KEYWORD_FALSE);
             break;
         }
 

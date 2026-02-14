@@ -28,31 +28,11 @@ namespace TwoPy::Backend {
     class Value {
     public:
         using py_object_ptr = ObjectBase*;
-        using hidden_data = std::variant<std::monostate, long, double, Reference, py_object_ptr>; 
+        using hidden_data = std::variant<std::monostate, long, double, Reference, py_object_ptr>;
     private:
         template <typename NativeType>
         struct native_type_tag {
             static constexpr auto value = ValueTag::NONE;
-        };
-
-        template <>
-        struct native_type_tag <long> {
-            static constexpr auto value = ValueTag::INT;
-        };
-
-        template <>
-        struct native_type_tag <double> {
-            static constexpr auto value = ValueTag::FLOAT;
-        };
-
-        template <>
-        struct native_type_tag <Reference> {
-            static constexpr auto value = ValueTag::REF;
-        };
-
-        template <>
-        struct native_type_tag <py_object_ptr> {
-            static constexpr auto value = ValueTag::OBJ;
         };
 
         hidden_data m_data;
@@ -88,6 +68,7 @@ namespace TwoPy::Backend {
                 return obj != nullptr && obj->is_truthy();
             }
             }
+            return false;
         }
 
         constexpr long to_long(this auto&& self) noexcept {
@@ -134,8 +115,9 @@ namespace TwoPy::Backend {
                         return obj->stringify();
                     }
                     return "<null>";
-                } 
+                }
             }
+            return "";
         }
 
         constexpr Reference ref() const noexcept {
@@ -168,6 +150,7 @@ namespace TwoPy::Backend {
                 return obj->is_truthy();
             }
             }
+            return false;
         }                                 
 
         /* Derkt told me this will be useful for when I start making my vm and it needs to pop and push items*/
@@ -201,6 +184,27 @@ namespace TwoPy::Backend {
         } */
 
         /// TODO: add  %, *, and / overloads with div_int()...
+    };
+
+    /// NOTE: I got some weird issues with g++ issues with 13 on WSL. After upgrading g++ to 14 it worked but there were some bugs
+    template <>
+    struct Value::native_type_tag<long> {
+        static constexpr auto value = ValueTag::INT;
+    };
+
+    template <>
+    struct Value::native_type_tag<double> {
+        static constexpr auto value = ValueTag::FLOAT;
+    };
+
+    template <>
+    struct Value::native_type_tag<Reference> {
+        static constexpr auto value = ValueTag::REF;
+    };
+
+    template <>
+    struct Value::native_type_tag<Value::py_object_ptr> {
+        static constexpr auto value = ValueTag::OBJ;
     };
 }
 
