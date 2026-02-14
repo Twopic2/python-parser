@@ -32,14 +32,12 @@ namespace TwoPy::Backend {
 
         /* Indexing */
         /// NOTE: immutable accessor for impl. of __get__
-        //virtual const Value& operator[](const Value&) const = 0; 
+        // virtual const Value& operator[](const Value&) const = 0;
 
-        /*
         /// NOTE: The `vm_state` argument must hide a `VMContext*` to affect the stack of. 
         // This `void*` trick & reinterpret_cast is needed to dodge circular inclusions- What if the VM uses the Value & object types but those must know of the VM internals? @DrkWithT
         /// NOTE: for __call__(self, args)
-        virtual bool invoke([[maybe_unused]] void* vm_state, [[maybe_unused]] uint8_t arg_count) = 0;
-        */
+        virtual bool call([[maybe_unused]] void* vm_state, [[maybe_unused]] uint8_t arg_count) = 0;
 
        /// NOTE: for __str__(self) converts different types to string
         virtual std::string stringify() = 0;
@@ -79,9 +77,13 @@ namespace TwoPy::Backend {
                 return ObjectTag::STRING;
             }
 
-          /*   const Value& operator[](const Value&) const override {
+            // const Value& operator[](const Value&) const override {
+                
+            // }
 
-            } */
+            [[nodiscard]] bool call([[maybe_unused]] void* vm_state, [[maybe_unused]] uint8_t arg_count) override {
+                return false;
+            }
 
             std::string stringify() override {
                 return m_data;
