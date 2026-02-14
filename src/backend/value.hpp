@@ -68,7 +68,7 @@ namespace TwoPy::Backend {
             return false;
         }
 
-        constexpr long to_long(this auto&& self) noexcept {
+        [[nodiscard]] constexpr long to_long(this auto&& self) noexcept {
             if (std::holds_alternative<long>(self.m_data)) {
                 return std::get<long>(self.m_data);
             } else if (std::holds_alternative<double>(self.m_data)) {
@@ -80,7 +80,7 @@ namespace TwoPy::Backend {
             return 0.0;
         }
 
-        constexpr double to_double(this auto&& self) noexcept {
+        [[nodiscard]] constexpr double to_double(this auto&& self) noexcept {
             if (std::holds_alternative<long>(self.m_data)) {
                 return std::get<long>(self.m_data);
             } else if (std::holds_alternative<double>(self.m_data)) {
@@ -92,32 +92,26 @@ namespace TwoPy::Backend {
             return 0.0;
         }
 
-        std::string to_string(this auto&& self) {
-            switch (self.m_tag) {
-                case ValueTag::NONE:
-                    return "None";
-                case ValueTag::BOOL:
-                    return std::get<long>(self.m_data) != 0L ? "True" : "False";
-                case ValueTag::INT:
-                    return std::to_string(std::get<long>(self.m_data));
-                case ValueTag::FLOAT:
-                    return std::to_string(std::get<double>(self.m_data));
-                case ValueTag::REF: {
-                    auto ref = std::get<Reference>(self.m_data);
-                    return ref->to_string();
+        [[nodiscard]] std::string to_string(this auto&& self) {
+            if (std::holds_alternative<std::monostate>(self.m_data)) {
+                return "None";
+            } else if (std::holds_alternative<long>(self.m_data)) {
+                return std::to_string(std::get<long>(self.m_data));
+            } else if (std::holds_alternative<double>(self.m_data)) {
+                return std::to_string(std::get<double>(self.m_data));
+            } else if (std::holds_alternative<Reference>(self.m_data)) {
+                return std::get<Reference>(self.m_data)->to_string();
+            } else if (std::holds_alternative<py_object_ptr>(self.m_data)) {
+                auto obj = std::get<py_object_ptr>(self.m_data);
+                if (obj) {
+                    return obj->stringify();
                 }
-                case ValueTag::OBJ: {
-                    auto obj = std::get<py_object_ptr>(self.m_data);
-                    if (obj) {
-                        return obj->stringify();
-                    }
-                    return "<null>";
-                }
+                return "<null>";
             }
             return "";
         }
 
-        constexpr Reference ref() const noexcept {
+        [[nodiscard]] constexpr Reference ref() const noexcept {
             if (auto reference_p = std::get_if<Reference>(&m_data); reference_p) {
                 return *reference_p;
             }
@@ -125,36 +119,17 @@ namespace TwoPy::Backend {
             return nullptr;
         }
 
-        constexpr py_object_ptr obj_ref() const noexcept {
+        [[nodiscard]] constexpr const hidden_data& data() const noexcept {
+            return m_data;
+        }
+
+        [[nodiscard]] constexpr py_object_ptr obj_ref() const noexcept {
             if (auto py_object_p = std::get_if<py_object_ptr>(&m_data); py_object_p) {
                 return *py_object_p;
             }
 
             return nullptr;
-        }
-
-        constexpr ValueTag tag(this auto&& self) noexcept {
-            return self.m_tag;
-        }
-
-        [[nodiscard]] constexpr bool is_truthy() const noexcept {
-            switch (m_tag) {
-            case ValueTag::NONE:
-                return false;
-            case ValueTag::BOOL:
-            case ValueTag::INT:
-                return std::get<long>(m_data) != 0L;
-            case ValueTag::FLOAT:
-                return std::get<double>(m_data) != 0.0;
-            case ValueTag::REF:
-                return std::get<Reference>(m_data) != nullptr;
-            case ValueTag::OBJ: {
-                auto obj = std::get<py_object_ptr>(m_data);
-                return obj->is_truthy();
-            }
-            }
-            return false;
-        }                                 
+        }           
 
         /* Derkt told me this will be useful for when I start making my vm and it needs to pop and push items*/
 /* 
@@ -187,27 +162,6 @@ namespace TwoPy::Backend {
         } */
 
         /// TODO: add  %, *, and / overloads with div_int()...
-    };
-
-    /// NOTE: I got some weird issues with g++ issues with 13 on WSL. After upgrading g++ to 14 it worked but there were some bugs
-    template <>
-    struct Value::native_type_tag<long> {
-        static constexpr auto value = ValueTag::INT;
-    };
-
-    template <>
-    struct Value::native_type_tag<double> {
-        static constexpr auto value = ValueTag::FLOAT;
-    };
-
-    template <>
-    struct Value::native_type_tag<Reference> {
-        static constexpr auto value = ValueTag::REF;
-    };
-
-    template <>
-    struct Value::native_type_tag<Value::py_object_ptr> {
-        static constexpr auto value = ValueTag::OBJ;
     };
 }
 

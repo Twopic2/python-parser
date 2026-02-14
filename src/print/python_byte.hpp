@@ -40,26 +40,28 @@ namespace BytePrinter {
     }
 
     inline std::string value_to_string(const Value& val) {
-        switch (val.tag()) {
-            case ValueTag::NONE: return "None";
-            case ValueTag::BOOL: return val.to_bool() ? "True" : "False";
-            case ValueTag::INT: return std::to_string(val.to_long());
-            case ValueTag::FLOAT: return std::to_string(val.to_double());
-            case ValueTag::REF: return "<ref>";
-            case ValueTag::OBJ: {
-                auto obj = val.obj_ref();
-                if (!obj) {
-                    return "<null>";
-                }
-                // For strings, show them with quotes (Python-style)
-                if (obj->tag() == ObjectTag::STRING) {
-                    return "\"" + obj->stringify() + "\"";
-                }
-                // For other objects, just use their string representation
-                return "<" + obj->stringify() + ">";
+        const auto& data = val.data();
+
+        if (std::holds_alternative<std::monostate>(data)) {
+            return "None";
+        } else if (std::holds_alternative<long>(data)) {
+            return std::to_string(std::get<long>(data));
+        } else if (std::holds_alternative<double>(data)) {
+            return std::to_string(std::get<double>(data));
+        } else if (std::holds_alternative<Reference>(data)) {
+            return "<ref>";
+        } else if (std::holds_alternative<Value::py_object_ptr>(data)) {
+            auto obj = std::get<Value::py_object_ptr>(data);
+            if (!obj) {
+                return "<null>";
             }
-            default: return "<unknown>";
+            if (obj->tag() == ObjectTag::STRING) {
+                return "\"" + obj->stringify() + "\"";
+            }
+            return "<" + obj->stringify() + ">";
         }
+
+        return "<unknown>";
     }
 
     inline void print_instruction(const Instruction& instr, size_t offset,

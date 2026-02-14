@@ -9,7 +9,7 @@
 
 /* Each of these would be local bytecode scope */
 namespace TwoPy::Backend {
-    class Value;
+    //class Value;
 
     /* These would be polymorphic heap object and wouldn't be primitives such as floats, bools, and ints */
 
