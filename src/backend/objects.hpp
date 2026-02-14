@@ -5,6 +5,8 @@
 #include <memory>
 #include <type_traits>
 
+#include <fmt/core.h>
+
 /* Each of these would be local bytecode scope */
 namespace TwoPy::Backend {
     class Value;
@@ -43,10 +45,27 @@ namespace TwoPy::Backend {
         virtual bool is_truthy() const noexcept = 0;
     };
 
-    /* class FunctionPyObject : public ObjectBase {
+    class FunctionPyObject : public ObjectBase {
+        private:
+            std::string name;
+            std::vector<std::string> params;
 
+        public:
+            explicit FunctionPyObject(std::string& data, std::vector<std::string>& vec) : name(std::move(data)), params(std::move(vec)) {}
+
+            ObjectTag tag() const noexcept override {
+                return ObjectTag::FUNCTION;
+            }
+
+            [[nodiscard]] std::string stringify() override {
+                return fmt::format("Function {}", name);
+            }
+
+            [[nodiscard]] bool is_truthy() const noexcept override {
+                return !name.empty();
+            }
     };
- */
+
     class StringPyObject : public ObjectBase {
         private:
             std::string m_data {};

@@ -16,6 +16,7 @@ namespace Ast {
     struct ExprNode;
     using ExprPtr = std::unique_ptr<ExprNode>;
 
+    struct BoolLiteral;
     struct IntegerLiteral;
     struct FloatLiteral;
     struct StringLiteral;
@@ -63,7 +64,7 @@ namespace Ast {
     struct ExpressionStmt;
 
     /* why is std::variant such a pain to debug */
-    using Literals = std::variant<IntegerLiteral, FloatLiteral, StringLiteral>;
+    using Literals = std::variant<IntegerLiteral, FloatLiteral, StringLiteral, BoolLiteral>;
     using OperatorsType = std::variant<AssignmentOp, AugmentedAssignmentOp, FactorOp, 
             TermOp, BitwiseOp, EqualityOp, ComparisonOp, PowerOp, OrOp, AndOp>;
 
@@ -78,6 +79,10 @@ namespace Ast {
     };
 
     struct StringLiteral {
+        Token::token_class token;
+    };
+
+    struct BoolLiteral {
         Token::token_class token;
     };
 
