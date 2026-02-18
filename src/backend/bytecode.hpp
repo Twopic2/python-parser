@@ -12,8 +12,6 @@
 #include "frontend/ast.hpp"
 
 namespace TwoPy::Backend {
-    namespace Ast = TwoPy::Frontend;
-
     /*
     Opcode (add, subtract, jump, whatever)
     Vars/Constant (for your STORE_VARIABLE and LOAD_CONSTANT)
@@ -61,7 +59,7 @@ namespace TwoPy::Backend {
 
     class compiler {
     private:
-        const Ast::Program& m_program;
+        const TwoPy::Frontend::Program& m_program;
 
         std::map<std::string, std::uint8_t> global_vars {};
 
@@ -72,18 +70,18 @@ namespace TwoPy::Backend {
 
         ByteCodeProgram m_bytecode_program {};
 
-        void disassemble_instruction(const Ast::StmtPtr& stmt);
+        void disassemble_instruction(const TwoPy::Frontend::StmtPtr& stmt);
 
-        void disassemble_stmt(const Ast::StmtNode& stmt);
-        void disassemble_expr(const Ast::ExprNode& expr);
+        void disassemble_stmt(const TwoPy::Frontend::StmtNode& stmt);
+        void disassemble_expr(const TwoPy::Frontend::ExprNode& expr);
 
-        void disassemble_operators(const Ast::OperatorsType& ops);
-        void disassemble_literals(const Ast::Literals& lits);
+        void disassemble_operators(const TwoPy::Frontend::OperatorsType& ops);
+        void disassemble_literals(const TwoPy::Frontend::Literals& lits);
 
-        void disassemble_function_object(const Ast::FunctionDef& function);
+        void disassemble_function_object(const TwoPy::Frontend::FunctionDef& function);
 
     public:
-        compiler(const Ast::Program& program);
+        compiler(const TwoPy::Frontend::Program& program);
 
         ByteCodeProgram disassemble_program();
         

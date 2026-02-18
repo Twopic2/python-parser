@@ -8,8 +8,7 @@ One would be to use std::hold_alternative which you'll have to manually check
 or use std::visit which allows for more cleaner code in the future.
 */
 namespace TwoPy::Backend {
-    using namespace TwoPy::Frontend;
-    compiler::compiler(const Ast::Program& program)
+    compiler::compiler(const TwoPy::Frontend::Program& program)
         : m_program(program) {
         m_bytecode_program.name = "<module>";
         m_bytecode_program.chunks.push_back(Chunk{});
@@ -25,7 +24,7 @@ namespace TwoPy::Backend {
         return m_bytecode_program;
     }
 
-    void compiler::disassemble_instruction(const Ast::StmtPtr& stmt) {
+    void compiler::disassemble_instruction(const TwoPy::Frontend::StmtPtr& stmt) {
         try {
             disassemble_stmt(*stmt);
         } catch (const std::exception& e) {
@@ -33,32 +32,32 @@ namespace TwoPy::Backend {
         }
     }
 
-    void compiler::disassemble_stmt(const Ast::StmtNode& stmt) {
-        if (auto* expr_stmt = std::get_if<Ast::ExpressionStmt>(&stmt.node)) {
+    void compiler::disassemble_stmt(const TwoPy::Frontend::StmtNode& stmt) {
+        if (auto* expr_stmt = std::get_if<TwoPy::Frontend::ExpressionStmt>(&stmt.node)) {
             if (expr_stmt->expression) {
                 disassemble_expr(*expr_stmt->expression);
             }
         }
     }
 
-    void compiler::disassemble_expr(const Ast::ExprNode& expr) {
-        if (auto* lits = std::get_if<Ast::Literals>(&expr.node)) {
+    void compiler::disassemble_expr(const TwoPy::Frontend::ExprNode& expr) {
+        if (auto* lits = std::get_if<TwoPy::Frontend::Literals>(&expr.node)) {
             disassemble_literals(*lits);
         }
 
-        if (auto* ops = std::get_if<Ast::OperatorsType>(&expr.node)) {
+        if (auto* ops = std::get_if<TwoPy::Frontend::OperatorsType>(&expr.node)) {
             disassemble_operators(*ops);
         }
     }
 
-    void compiler::disassemble_operators(const Ast::OperatorsType& ops) {
-        if (auto* assign = std::get_if<Ast::AssignmentOp>(&ops)) {
+    void compiler::disassemble_operators(const TwoPy::Frontend::OperatorsType& ops) {
+        if (auto* assign = std::get_if<TwoPy::Frontend::AssignmentOp>(&ops)) {
             if (assign->value) {
                 disassemble_expr(*assign->value);
             }
 
             if (assign->target) {
-                if (auto* ident = std::get_if<Ast::Identifier>(&assign->target->node)) {
+                if (auto* ident = std::get_if<TwoPy::Frontend::Identifier>(&assign->target->node)) {
                     uint8_t var_index;
 
                     if (!global_vars.contains(ident->token.value)) {
@@ -74,7 +73,7 @@ namespace TwoPy::Backend {
             }
         }
 
-        if (auto* term = std::get_if<Ast::TermOp>(&ops)) {
+        if (auto* term = std::get_if<TwoPy::Frontend::TermOp>(&ops)) {
             if (term->left) disassemble_expr(*term->left);
             if (term->right) disassemble_expr(*term->right);
 
@@ -87,7 +86,7 @@ namespace TwoPy::Backend {
             return;
         }
 
-        if (auto* factor = std::get_if<Ast::FactorOp>(&ops)) {
+        if (auto* factor = std::get_if<TwoPy::Frontend::FactorOp>(&ops)) {
             if (factor->left) disassemble_expr(*factor->left);
             if (factor->right) disassemble_expr(*factor->right);
 
@@ -101,8 +100,8 @@ namespace TwoPy::Backend {
         }
     }
 
-    void compiler::disassemble_literals(const Ast::Literals& lits) {
-        if (auto* int_lit = std::get_if<Ast::IntegerLiteral>(&lits)) {
+    void compiler::disassemble_literals(const TwoPy::Frontend::Literals& lits) {
+        if (auto* int_lit = std::get_if<TwoPy::Frontend::IntegerLiteral>(&lits)) {
             m_curr_chunk->consts_pool.emplace_back(std::stol(int_lit->token.value));
             std::uint8_t const_index = static_cast<std::uint8_t>(m_curr_chunk->consts_pool.size() - 1);
 
@@ -110,7 +109,7 @@ namespace TwoPy::Backend {
             return;
         }
 
-        if (auto* float_lit = std::get_if<Ast::FloatLiteral>(&lits)) {
+        if (auto* float_lit = std::get_if<TwoPy::Frontend::FloatLiteral>(&lits)) {
             m_curr_chunk->consts_pool.emplace_back(std::stod(float_lit->token.value));
             std::uint8_t const_index = static_cast<std::uint8_t>(m_curr_chunk->consts_pool.size() - 1);
 
@@ -118,7 +117,7 @@ namespace TwoPy::Backend {
             return;
         }
 
-        if (auto* string_lit = std::get_if<Ast::StringLiteral>(&lits)) {
+        if (auto* string_lit = std::get_if<TwoPy::Frontend::StringLiteral>(&lits)) {
             auto str_obj = std::make_unique<StringPyObject>(string_lit->token.value);
             
             auto raw_ptr = str_obj.get();
@@ -133,4 +132,9 @@ namespace TwoPy::Backend {
             return;
         } 
     }
+
+    /* void disassemble_function_object(const TwoPy::Frontend::FunctionDef& function) {
+        auto* func_heap = std::get_if<TwoPy::Frontend::FuntionDef>(&function);
+    } */
+
 }

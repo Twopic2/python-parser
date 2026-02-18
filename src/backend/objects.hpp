@@ -50,7 +50,8 @@ namespace TwoPy::Backend {
         private:
             std::string name;
             std::vector<std::string> params;
-
+            /* Chunk func_init {};
+ */
         public:
             explicit FunctionPyObject(std::string& data, std::vector<std::string>& vec) : name(std::move(data)), params(std::move(vec)) {}
 
