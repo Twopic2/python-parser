@@ -26,20 +26,20 @@ int main(int argc, char* argv[]) {
         Parser::parser_class parser(lexer);
         Ast::Program program = parser.parse();
 
-        fmt::print("\n=== ByteCode Compilation ===\n\n");
+       /*  fmt::print("\n=== ByteCode Compilation ===\n\n");
 
         TwoPy::Backend::compiler bytecode_compiler(program);
         TwoPy::Backend::ByteCodeProgram bytecode_program = bytecode_compiler.disassemble_program();
 
         BytePrinter::disassemble_program(bytecode_program);
 
-        fmt::print("\n=== ByteCode End ===\n");
+        fmt::print("\n=== ByteCode End ===\n"); */
 
-       /*  fmt::print("\n=== ABSTRACT SYNTAX TREE ===\n");
+       fmt::print("\n=== ABSTRACT SYNTAX TREE ===\n");
 
         AstPrinter::print_ast(program);
 
-        fmt::print("\n=== PARSING COMPLETE ===\n"); */
+        fmt::print("\n=== PARSING COMPLETE ===\n"); 
 
     } catch (const std::exception& e) {
         fmt::print(stderr, "Error: {}\n", e.what());

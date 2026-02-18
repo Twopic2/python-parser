@@ -427,17 +427,17 @@ Ast::ExprPtr Parser::parser_class::parse_self() {
     Token::token_class token = current_token();
     consume(Token::token_type::KEYWORD_SELF);
 
-    std::optional<Ast::Identifier> attr = std::nullopt;
+    std::unique_ptr<Ast::Identifier> attr;
     if (match(Token::token_type::DOT)) {
         consume(Token::token_type::DOT);
         if (!match(Token::token_type::IDENTIFIER)) {
             debug_syntax_error();
         }
-        attr = Ast::Identifier{current_token()};
+        attr = std::make_unique<Ast::Identifier>(current_token());
         consume();
     }
 
-    Ast::SelfExpr self{token, attr};
+    Ast::SelfExpr self{token, std::move(attr)};
     auto self_node = std::make_unique<Ast::ExprNode>(Ast::ExprNode{std::move(self)});
     return self_node;
 }
@@ -449,7 +449,7 @@ Ast::StmtPtr Parser::parser_class::parse_try() {
     consume_newline();
     Ast::Block try_body = parse_block();
 
-    std::optional<Ast::ExceptStmt> except_branch = std::nullopt;
+    std::unique_ptr<Ast::ExceptStmt> except_branch {nullptr};
     if (match(Token::token_type::KEYWORD_EXCEPT)) {
         Token::token_class except_token = current_token();
         consume(Token::token_type::KEYWORD_EXCEPT);
@@ -457,10 +457,10 @@ Ast::StmtPtr Parser::parser_class::parse_try() {
         consume_newline();
         Ast::Block except_body = parse_block();
 
-        except_branch = Ast::ExceptStmt{except_token, std::move(except_body)};
+        except_branch = std::make_unique<Ast::ExceptStmt>(except_token, std::move(except_body));
     }
 
-    std::optional<Ast::FinallyStmt> finally_branch = std::nullopt;
+    std::unique_ptr<Ast::FinallyStmt> finally_branch {nullptr};
     if (match(Token::token_type::KEYWORD_FINALLY)) {
         Token::token_class finally_token = current_token();
         consume(Token::token_type::KEYWORD_FINALLY);
@@ -468,10 +468,10 @@ Ast::StmtPtr Parser::parser_class::parse_try() {
         consume_newline();
         Ast::Block finally_body = parse_block();
 
-        finally_branch = Ast::FinallyStmt{finally_token, std::move(finally_body)};
+        finally_branch = std::make_unique<Ast::FinallyStmt>(finally_token, std::move(finally_body));
     }
 
-    std::optional<Ast::ElseStmt> else_branch = std::nullopt;
+    std::unique_ptr<Ast::ElseStmt> else_branch {};
     if (match(Token::token_type::KEYWORD_ELSE)) {
         Token::token_class else_token = current_token();
         consume(Token::token_type::KEYWORD_ELSE);
@@ -479,7 +479,7 @@ Ast::StmtPtr Parser::parser_class::parse_try() {
         consume_newline();
         Ast::Block else_body = parse_block();
 
-        else_branch = Ast::ElseStmt{else_token, std::move(else_body)};
+        else_branch = std::make_unique<Ast::ElseStmt>(else_token, std::move(else_body));
     }
 
     Ast::TryStmt try_stmt{token, std::move(try_body), std::move(except_branch), std::move(finally_branch), std::move(else_branch)};
@@ -525,7 +525,7 @@ Ast::StmtPtr Parser::parser_class::parse_return_stmt() {
     Token::token_class token = current_token();
     consume(Token::token_type::KEYWORD_RETURN);
 
-    std::optional<Ast::ExprPtr> value = std::nullopt;
+    Ast::ExprPtr value;
     if (!is_at_end() && !match(Token::token_type::NEWLINE)) {
         value = parse_expression_types();
     }
@@ -691,7 +691,7 @@ Ast::StmtPtr Parser::parser_class::parse_if_stmt() {
         elifs.push_back(Ast::ElifStmt{elif_token, std::move(elif_condition), std::move(elif_body)});
     }
 
-    std::optional<Ast::ElseStmt> else_branch = std::nullopt;
+    std::unique_ptr<Ast::ElseStmt> else_branch;
     if (match(Token::token_type::KEYWORD_ELSE)) {
         Token::token_class else_token = current_token();
         consume(Token::token_type::KEYWORD_ELSE);
@@ -699,7 +699,7 @@ Ast::StmtPtr Parser::parser_class::parse_if_stmt() {
         consume_newline();
         Ast::Block else_body = parse_block();
 
-        else_branch = Ast::ElseStmt{else_token, std::move(else_body)};
+        else_branch = std::make_unique<Ast::ElseStmt>(else_token, std::move(else_body));
     }
 
     Ast::IfStmt if_stmt{token, std::move(condition), std::move(body), std::move(elifs), std::move(else_branch)};

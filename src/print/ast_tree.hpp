@@ -246,7 +246,7 @@ inline void print_stmt_node(const Ast::ReturnStmt& node, int depth) {
     print_indent(depth);
     fmt::print("ReturnStmt\n");
     if (node.value) {
-        print_expr(*node.value, depth + 1);
+        print_expr(node.value, depth + 1);
     }
 }
 

@@ -7,8 +7,6 @@
 #include <variant>
 #include <string_view>
 #include <cstddef>
-#include <optional>
-
 #include "frontend/token.hpp"
 
 namespace Ast {
@@ -168,7 +166,7 @@ namespace Ast {
 
     struct SelfExpr {
         Token::token_class token;
-        std::optional<Identifier> attribute;
+        std::unique_ptr<Identifier> attribute;
     };
 
     struct Block {
@@ -198,7 +196,7 @@ namespace Ast {
 
     struct ReturnStmt {
         Token::token_class token;
-        std::optional<ExprPtr> value;
+        ExprPtr value;
     };
 
     struct PassStmt {
@@ -229,7 +227,7 @@ namespace Ast {
         ExprPtr condition;
         Block body;
         std::vector<ElifStmt> elifs;
-        std::optional<ElseStmt> else_branch;
+        std::unique_ptr<ElseStmt> else_branch;
     };
 
     struct WhileStmt {
@@ -270,9 +268,9 @@ namespace Ast {
     struct TryStmt {
         Token::token_class token;
         Block body;
-        std::optional<ExceptStmt> except_branch;
-        std::optional<FinallyStmt> finally_branch;
-        std::optional<ElseStmt> else_branch;
+        std::unique_ptr<ExceptStmt> except_branch;
+        std::unique_ptr<FinallyStmt> finally_branch;
+        std::unique_ptr<ElseStmt> else_branch;
     };
 
     struct FunctionDef {
