@@ -9,7 +9,7 @@
 #include <cstddef>
 #include "frontend/token.hpp"
 
-namespace Ast {
+namespace TwoPy::Frontend {
     /* Forward Decl - Expressions */
     struct ExprNode;
     using ExprPtr = std::unique_ptr<ExprNode>;
@@ -69,113 +69,113 @@ namespace Ast {
     /* Begin Node define */
 
     struct IntegerLiteral {
-        Token::token_class token;
+        token_class token;
     };
 
     struct FloatLiteral {
-        Token::token_class token;
+        token_class token;
     };
 
     struct StringLiteral {
-        Token::token_class token;
+        token_class token;
     };
 
     struct BoolLiteral {
-        Token::token_class token;
+        token_class token;
     };
 
     struct Identifier {
-        Token::token_class token;
+        token_class token;
     };
 
     struct AndOp {
-        Token::token_class op;
+        token_class op;
         ExprPtr left;
         ExprPtr right;
     };
 
     struct OrOp {
-        Token::token_class op;
+        token_class op;
         ExprPtr left;
         ExprPtr right;
     };
 
     struct FactorOp {
-        Token::token_class op;
+        token_class op;
         ExprPtr left;
         ExprPtr right;
     };
 
     struct BitwiseOp {
-        Token::token_class op;
+        token_class op;
         ExprPtr left;
         ExprPtr right;
     };
 
     struct EqualityOp {
-        Token::token_class op;
+        token_class op;
         ExprPtr left;
         ExprPtr right;
     };
 
     struct ComparisonOp {
-        Token::token_class op;
+        token_class op;
         ExprPtr left;
         ExprPtr right;
     };
 
     struct PowerOp {
-        Token::token_class op;
+        token_class op;
         ExprPtr base;
         ExprPtr exponent;
     };
 
     struct TermOp {
-        Token::token_class op;
+        token_class op;
         ExprPtr left;
         ExprPtr right;
     };
 
     struct CallExpr {
-        Token::token_class token;
+        token_class token;
         ExprPtr callee;
         std::vector<ExprPtr> arguments;
     };
    
     struct ConstructorCallExpr {
-        Token::token_class token;
+        token_class token;
         ExprPtr constructor;
         std::vector<ExprPtr> arguments;
     };
     
     struct AttributeExpr {
-        Token::token_class token;
+        token_class token;
         Identifier constructor;
         Identifier attribute;
     };
 
     struct ListExpr {
-        Token::token_class token;
+        token_class token;
         std::vector<ExprPtr> elements;
     };
 
     struct DictExpr {
-        Token::token_class token;
+        token_class token;
         std::vector<std::pair<ExprPtr, ExprPtr>> entries;
     };
 
     struct SelfExpr {
-        Token::token_class token;
+        token_class token;
         std::unique_ptr<Identifier> attribute;
     };
 
     struct Block {
-        Token::token_class token;
+        token_class token;
         std::vector<StmtPtr> statements;
     };
 
     struct Parameter {
-        Token::token_class token;
+        token_class token;
     };
 
     struct ParameterList {
@@ -183,47 +183,47 @@ namespace Ast {
     };
 
     struct AssignmentOp {
-        Token::token_class token;
+        token_class token;
         ExprPtr target;
         ExprPtr value;
     };
 
     struct AugmentedAssignmentOp {
-        Token::token_class op;
+        token_class op;
         ExprPtr target;
         ExprPtr value;
     };
 
     struct ReturnStmt {
-        Token::token_class token;
+        token_class token;
         ExprPtr value;
     };
 
     struct PassStmt {
-        Token::token_class token;
+        token_class token;
     };
 
     struct BreakStmt {
-        Token::token_class token;
+        token_class token;
     };
 
     struct ContinueStmt {
-        Token::token_class token;
+        token_class token;
     };
 
     struct ElifStmt {
-        Token::token_class token;
+        token_class token;
         ExprPtr condition;
         Block body;
     };
 
     struct ElseStmt {
-        Token::token_class token;
+        token_class token;
         Block body;
     };
 
     struct IfStmt {
-        Token::token_class token;
+        token_class token;
         ExprPtr condition;
         Block body;
         std::vector<ElifStmt> elifs;
@@ -231,42 +231,42 @@ namespace Ast {
     };
 
     struct WhileStmt {
-        Token::token_class token;
+        token_class token;
         ExprPtr condition;
         Block body;
     };
 
     struct ForStmt {
-        Token::token_class token;
+        token_class token;
         Identifier variable;
         ExprPtr iterable;
         Block body;
     };
 
     struct CaseStmt {
-        Token::token_class token;
+        token_class token;
         ExprPtr pattern;
         Block body;
     };
 
     struct MatchStmt {
-        Token::token_class token;
+        token_class token;
         ExprPtr subject;
         std::vector<CaseStmt> cases;
     };
 
     struct ExceptStmt {
-        Token::token_class token;
+        token_class token;
         Block body;
     };
 
     struct FinallyStmt {
-        Token::token_class token;
+        token_class token;
         Block body;
     };
 
     struct TryStmt {
-        Token::token_class token;
+        token_class token;
         Block body;
         std::unique_ptr<ExceptStmt> except_branch;
         std::unique_ptr<FinallyStmt> finally_branch;
@@ -274,30 +274,30 @@ namespace Ast {
     };
 
     struct FunctionDef {
-        Token::token_class token;
+        token_class token;
         ParameterList params;
         Block body;
     };
 
     struct MethodDef {
-        Token::token_class token;
+        token_class token;
         ParameterList params;
         Block body;
     };
 
     struct ClassDef {
-        Token::token_class token;
+        token_class token;
         Block body;
     };
 
     struct LambdaStmt {
-        Token::token_class token;
+        token_class token;
         ParameterList params;
         std::vector<StmtPtr> body;
     };
 
     struct ExpressionStmt {
-        Token::token_class token;
+        token_class token;
         ExprPtr expression;
     };
 

@@ -12,7 +12,9 @@
 #include "frontend/ast.hpp"
 
 namespace TwoPy::Backend {
-    /* 
+    namespace Ast = TwoPy::Frontend;
+
+    /*
     Opcode (add, subtract, jump, whatever)
     Vars/Constant (for your STORE_VARIABLE and LOAD_CONSTANT)
     */

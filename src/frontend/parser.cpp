@@ -3,6 +3,8 @@
 
 #include "frontend/parser.hpp"
 
+namespace TwoPy::Frontend {
+
 /*
 Recursive descent order
 
@@ -20,28 +22,28 @@ parse_power()          - Exponentiation
 parse_expression()     - Literals, identifier
 */
 
-Parser::parser_class::parser_class(Lexical::lexical_class& lexer) : current_pos(0),  m_previous_pos(0) {
+parser_class::parser_class(lexical_class& lexer) : current_pos(0),  m_previous_pos(0) {
     tokens = lexer.tokenize();
 }
 
-Token::token_class& Parser::parser_class::current_token() {
+token_class& parser_class::current_token() {
     return tokens[current_pos];
 }
 
-Token::token_class& Parser::parser_class::previous_token() {
+token_class& parser_class::previous_token() {
     return tokens[m_previous_pos];
 }
 
-bool Parser::parser_class::match(const Token::token_type& type) {
+bool parser_class::match(const token_type& type) {
     return type == current_token().type;
 }
 
-bool Parser::parser_class::is_at_end() {
-    return current_pos >= tokens.size() || current_token().type == Token::token_type::EOF_TOKEN;
+bool parser_class::is_at_end() {
+    return current_pos >= tokens.size() || current_token().type == token_type::EOF_TOKEN;
 }
 
-Ast::Program Parser::parser_class::parse() {
-    Ast::Program program;
+Program parser_class::parse() {
+    Program program;
 
     while (!is_at_end()) {
         auto stmt = parse_statement();
@@ -53,83 +55,83 @@ Ast::Program Parser::parser_class::parse() {
     return program;
 }
 
-void Parser::parser_class::consume_newline() {
-    consume(Token::token_type::COLON);
-    consume(Token::token_type::NEWLINE);
-    if (!match(Token::token_type::INDENT)) {
+void parser_class::consume_newline() {
+    consume(token_type::COLON);
+    consume(token_type::NEWLINE);
+    if (!match(token_type::INDENT)) {
         debug_syntax_error();
     }
-    consume(Token::token_type::INDENT);
+    consume(token_type::INDENT);
 }
 
-void Parser::parser_class::consume_line() {
-    consume(Token::token_type::NEWLINE);
-    if (!match(Token::token_type::INDENT)) {
+void parser_class::consume_line() {
+    consume(token_type::NEWLINE);
+    if (!match(token_type::INDENT)) {
         debug_syntax_error();
     }
-    consume(Token::token_type::INDENT);
+    consume(token_type::INDENT);
 }
 
-Ast::Block Parser::parser_class::parse_block() {
-    Ast::Block block;
+Block parser_class::parse_block() {
+    Block block;
     block.token = current_token();
 
-    while (!match(Token::token_type::DEDENT) && !is_at_end()) {
+    while (!match(token_type::DEDENT) && !is_at_end()) {
         auto stmt = parse_statement();
         if (stmt) {
             block.statements.push_back(std::move(stmt));
         }
     }
 
-    consume(Token::token_type::DEDENT);
+    consume(token_type::DEDENT);
     return block;
 }
 
-Ast::ExprPtr Parser::parser_class::parse_expression_types() {
-    Ast::ExprPtr expr {};
+ExprPtr parser_class::parse_expression_types() {
+    ExprPtr expr {};
 
     switch (current_token().type) {
-        case Token::token_type::INTEGER_LITERAL: {
-            Ast::IntegerLiteral lit{current_token()};
-            expr = std::make_unique<Ast::ExprNode>(Ast::ExprNode{lit});
-            consume(Token::token_type::INTEGER_LITERAL);
+        case token_type::INTEGER_LITERAL: {
+            IntegerLiteral lit{current_token()};
+            expr = std::make_unique<ExprNode>(ExprNode{lit});
+            consume(token_type::INTEGER_LITERAL);
             break;
         }
 
-        case Token::token_type::FLOAT_LITERAL: {
-            Ast::FloatLiteral lit{current_token()};
-            expr = std::make_unique<Ast::ExprNode>(Ast::ExprNode{lit});
-            consume(Token::token_type::FLOAT_LITERAL);
+        case token_type::FLOAT_LITERAL: {
+            FloatLiteral lit{current_token()};
+            expr = std::make_unique<ExprNode>(ExprNode{lit});
+            consume(token_type::FLOAT_LITERAL);
             break;
         }
 
-        case Token::token_type::STRING_LITERAL: {
-            Ast::StringLiteral lit{current_token()};
-            expr = std::make_unique<Ast::ExprNode>(Ast::ExprNode{lit});
-            consume(Token::token_type::STRING_LITERAL);
+        case token_type::STRING_LITERAL: {
+            StringLiteral lit{current_token()};
+            expr = std::make_unique<ExprNode>(ExprNode{lit});
+            consume(token_type::STRING_LITERAL);
             break;
         }
 
-        case Token::token_type::KEYWORD_TRUE: {
-            Ast::BoolLiteral lit{current_token()};
-            expr = std::make_unique<Ast::ExprNode>(Ast::ExprNode{lit});
-            consume(Token::token_type::KEYWORD_TRUE);
+        case token_type::KEYWORD_TRUE: {
+            BoolLiteral lit{current_token()};
+            expr = std::make_unique<ExprNode>(ExprNode{lit});
+            consume(token_type::KEYWORD_TRUE);
             break;
         }
 
-        case Token::token_type::KEYWORD_FALSE: {
-            Ast::BoolLiteral lit{current_token()};
-            expr = std::make_unique<Ast::ExprNode>(Ast::ExprNode{lit});
-            consume(Token::token_type::KEYWORD_FALSE);
+        case token_type::KEYWORD_FALSE: {
+            BoolLiteral lit{current_token()};
+            expr = std::make_unique<ExprNode>(ExprNode{lit});
+            consume(token_type::KEYWORD_FALSE);
             break;
         }
 
-        case Token::token_type::IDENTIFIER: {
-            Ast::Identifier id{current_token()};
-            auto id_expr = std::make_unique<Ast::ExprNode>(Ast::ExprNode{id});
-            consume(Token::token_type::IDENTIFIER);
+        case token_type::IDENTIFIER: {
+            Identifier id{current_token()};
+            auto id_expr = std::make_unique<ExprNode>(ExprNode{id});
+            consume(token_type::IDENTIFIER);
 
-            if (match(Token::token_type::LPAREN)) {
+            if (match(token_type::LPAREN)) {
                 if (valid_constructor) {
                     expr = parse_constructor_call(std::move(id_expr));
                     valid_constructor = false;
@@ -143,22 +145,22 @@ Ast::ExprPtr Parser::parser_class::parse_expression_types() {
             break;
         }
 
-        case Token::token_type::LBRACKET:
+        case token_type::LBRACKET:
             expr = parse_list();
             break;
 
-        case Token::token_type::LCBRACE:
+        case token_type::LCBRACE:
             expr = parse_dict();
             break;
 
-        case Token::token_type::LPAREN: {
-            consume(Token::token_type::LPAREN);
+        case token_type::LPAREN: {
+            consume(token_type::LPAREN);
             expr = parse_logical_or();
-            consume(Token::token_type::RPAREN);
+            consume(token_type::RPAREN);
             break;
         }
 
-        case Token::token_type::KEYWORD_SELF:
+        case token_type::KEYWORD_SELF:
             expr = parse_self();
             break;
 
@@ -169,37 +171,37 @@ Ast::ExprPtr Parser::parser_class::parse_expression_types() {
     return expr;
 }
 
-Ast::ExprPtr Parser::parser_class::parse_attribute_expr() {
-    Ast::Identifier inst_var{previous_token()};
+ExprPtr parser_class::parse_attribute_expr() {
+    Identifier inst_var{previous_token()};
     
-    consume(Token::token_type::DOT);
+    consume(token_type::DOT);
 
-    if (!match(Token::token_type::IDENTIFIER)) {
+    if (!match(token_type::IDENTIFIER)) {
         debug_syntax_error();
     }
 
 
-    Ast::Identifier attr{current_token()};
+    Identifier attr{current_token()};
     consume();
 
-    Ast::AttributeExpr attr_expr{current_token(), inst_var, attr};
-    auto attr_node = std::make_unique<Ast::ExprNode>(Ast::ExprNode{std::move(attr_expr)});
+    AttributeExpr attr_expr{current_token(), inst_var, attr};
+    auto attr_node = std::make_unique<ExprNode>(ExprNode{std::move(attr_expr)});
     return attr_node;
 }
 
-Ast::ExprPtr Parser::parser_class::parse_call_expr(Ast::ExprPtr callee) {
-    Token::token_class token = current_token();
-    consume(Token::token_type::LPAREN);
+ExprPtr parser_class::parse_call_expr(ExprPtr callee) {
+    token_class token = current_token();
+    consume(token_type::LPAREN);
 
-    Ast::CallExpr call{token, std::move(callee), {}};
+    CallExpr call{token, std::move(callee), {}};
 
-    if (!match(Token::token_type::RPAREN)) {
+    if (!match(token_type::RPAREN)) {
         call.arguments.push_back(parse_term());
 
-        while (match(Token::token_type::COMMA)) {
-            consume(Token::token_type::COMMA);
+        while (match(token_type::COMMA)) {
+            consume(token_type::COMMA);
 
-            if (match(Token::token_type::RPAREN)) {
+            if (match(token_type::RPAREN)) {
                 break;
             }
 
@@ -208,23 +210,23 @@ Ast::ExprPtr Parser::parser_class::parse_call_expr(Ast::ExprPtr callee) {
     }
 
     consume();
-    auto call_node = std::make_unique<Ast::ExprNode>(Ast::ExprNode{std::move(call)});
+    auto call_node = std::make_unique<ExprNode>(ExprNode{std::move(call)});
     return call_node;
 }
 
-Ast::ExprPtr Parser::parser_class::parse_constructor_call(Ast::ExprPtr constructor) {
-    Token::token_class token = current_token();
-    consume(Token::token_type::LPAREN);
+ExprPtr parser_class::parse_constructor_call(ExprPtr constructor) {
+    token_class token = current_token();
+    consume(token_type::LPAREN);
 
-    Ast::ConstructorCallExpr con{token, std::move(constructor), {}};
+    ConstructorCallExpr con{token, std::move(constructor), {}};
 
-    if (!match(Token::token_type::RPAREN)) {
+    if (!match(token_type::RPAREN)) {
         con.arguments.push_back(parse_term());
 
-        while (match(Token::token_type::COMMA)) {
-            consume(Token::token_type::COMMA);
+        while (match(token_type::COMMA)) {
+            consume(token_type::COMMA);
 
-            if (match(Token::token_type::RPAREN)) {
+            if (match(token_type::RPAREN)) {
                 break;
             }
 
@@ -233,360 +235,360 @@ Ast::ExprPtr Parser::parser_class::parse_constructor_call(Ast::ExprPtr construct
     }
 
     consume();
-    auto con_node = std::make_unique<Ast::ExprNode>(Ast::ExprNode{std::move(con)});
+    auto con_node = std::make_unique<ExprNode>(ExprNode{std::move(con)});
     return con_node;
 }
 
-Ast::ExprPtr Parser::parser_class::parse_comparator() {
+ExprPtr parser_class::parse_comparator() {
     auto left = parse_bitwise();
 
-    if (match(Token::token_type::GREATER, Token::token_type::GREATER_EQUAL, Token::token_type::LESS, Token::token_type::LESS_EQUAL)) {
-        Token::token_class op { current_token() };
+    if (match(token_type::GREATER, token_type::GREATER_EQUAL, token_type::LESS, token_type::LESS_EQUAL)) {
+        token_class op { current_token() };
         consume(current_token().type);
 
-        Ast::ComparisonOp comp{op, std::move(left), parse_comparator()};
-        auto comp_node = std::make_unique<Ast::ExprNode>(Ast::ExprNode{std::move(comp)});
+        ComparisonOp comp{op, std::move(left), parse_comparator()};
+        auto comp_node = std::make_unique<ExprNode>(ExprNode{std::move(comp)});
         return comp_node;
     }
 
     return left;
 }
 
-Ast::ExprPtr Parser::parser_class::parse_term() {
+ExprPtr parser_class::parse_term() {
     auto left = parse_factor();
 
-    while (match(Token::token_type::PLUS, Token::token_type::MINUS)) {
-        Token::token_class op { current_token() };
+    while (match(token_type::PLUS, token_type::MINUS)) {
+        token_class op { current_token() };
         consume(current_token().type);
 
-        Ast::TermOp term{op, std::move(left), parse_factor()};
-        left = std::make_unique<Ast::ExprNode>(Ast::ExprNode{std::move(term)});
+        TermOp term{op, std::move(left), parse_factor()};
+        left = std::make_unique<ExprNode>(ExprNode{std::move(term)});
     }
 
     return left;
 }
 
-Ast::ExprPtr Parser::parser_class::parse_equality() {
+ExprPtr parser_class::parse_equality() {
     auto left = parse_comparator();
 
-    while (match(Token::token_type::DOUBLE_EQUAL, Token::token_type::NOT_EQUAL)) {
-        Token::token_class op { current_token() };
+    while (match(token_type::DOUBLE_EQUAL, token_type::NOT_EQUAL)) {
+        token_class op { current_token() };
         consume();
 
-        Ast::EqualityOp eq{op, std::move(left), parse_comparator()};
-        left = std::make_unique<Ast::ExprNode>(Ast::ExprNode{std::move(eq)});
+        EqualityOp eq{op, std::move(left), parse_comparator()};
+        left = std::make_unique<ExprNode>(ExprNode{std::move(eq)});
     }
 
     return left;
 }
 
-Ast::ExprPtr Parser::parser_class::parse_factor() {
+ExprPtr parser_class::parse_factor() {
     auto left = parse_power();
 
-    while (match(Token::token_type::STAR, Token::token_type::SLASH, Token::token_type::DOUBLE_SLASH, Token::token_type::PERCENT)) {
-        Token::token_class op { current_token() };
+    while (match(token_type::STAR, token_type::SLASH, token_type::DOUBLE_SLASH, token_type::PERCENT)) {
+        token_class op { current_token() };
         consume();
 
-        Ast::FactorOp factor{op, std::move(left), parse_power()};
-        left = std::make_unique<Ast::ExprNode>(Ast::ExprNode{std::move(factor)});
+        FactorOp factor{op, std::move(left), parse_power()};
+        left = std::make_unique<ExprNode>(ExprNode{std::move(factor)});
     }
 
     return left;
 }
 
-Ast::ExprPtr Parser::parser_class::parse_power() {
+ExprPtr parser_class::parse_power() {
     auto base = parse_expression_types();
 
-    if (match(Token::token_type::POWER)) {
-        Token::token_class op { current_token() };
+    if (match(token_type::POWER)) {
+        token_class op { current_token() };
         consume();
 
-        Ast::PowerOp power{op, std::move(base), parse_power()};
-        auto power_node = std::make_unique<Ast::ExprNode>(Ast::ExprNode{std::move(power)});
+        PowerOp power{op, std::move(base), parse_power()};
+        auto power_node = std::make_unique<ExprNode>(ExprNode{std::move(power)});
         return power_node;
     }
 
     return base;
 }
 
-Ast::ExprPtr Parser::parser_class::parse_bitwise() {
+ExprPtr parser_class::parse_bitwise() {
     auto left = parse_term();
 
-    while (match(Token::token_type::PIPE, Token::token_type::CARET, Token::token_type::AMPERSAND, Token::token_type::LEFT_SHIFT, Token::token_type::RIGHT_SHIFT)) {
-        Token::token_class op { current_token() };
+    while (match(token_type::PIPE, token_type::CARET, token_type::AMPERSAND, token_type::LEFT_SHIFT, token_type::RIGHT_SHIFT)) {
+        token_class op { current_token() };
         consume();
 
-        Ast::BitwiseOp bitwise{op, std::move(left), parse_term()};
-        left = std::make_unique<Ast::ExprNode>(Ast::ExprNode{std::move(bitwise)});
+        BitwiseOp bitwise{op, std::move(left), parse_term()};
+        left = std::make_unique<ExprNode>(ExprNode{std::move(bitwise)});
     }
 
     return left;
 }
 
-Ast::StmtPtr Parser::parser_class::parse_lambda() {
-    Token::token_class token {current_token()};
-    consume(Token::token_type::KEYWORD_LAMBDA);
+StmtPtr parser_class::parse_lambda() {
+    token_class token {current_token()};
+    consume(token_type::KEYWORD_LAMBDA);
 
-    Ast::ParameterList params;
+    ParameterList params;
 
-    if (!match(Token::token_type::COLON)) {
-        if (match(Token::token_type::IDENTIFIER)) {
-            params.params.push_back(Ast::Parameter{current_token()});
-            consume(Token::token_type::IDENTIFIER);
+    if (!match(token_type::COLON)) {
+        if (match(token_type::IDENTIFIER)) {
+            params.params.push_back(Parameter{current_token()});
+            consume(token_type::IDENTIFIER);
         }
 
-        while (match(Token::token_type::COMMA)) {
-            consume(Token::token_type::COMMA);
-            if (match(Token::token_type::IDENTIFIER)) {
-                params.params.push_back(Ast::Parameter{current_token()});
-                consume(Token::token_type::IDENTIFIER);
+        while (match(token_type::COMMA)) {
+            consume(token_type::COMMA);
+            if (match(token_type::IDENTIFIER)) {
+                params.params.push_back(Parameter{current_token()});
+                consume(token_type::IDENTIFIER);
             }
         }
     }
-    consume(Token::token_type::COLON);
+    consume(token_type::COLON);
 
-    std::vector<Ast::StmtPtr> body;
-    while (!match(Token::token_type::NEWLINE) && !is_at_end()) {
+    std::vector<StmtPtr> body;
+    while (!match(token_type::NEWLINE) && !is_at_end()) {
         auto stmt = parse_statement();
         if (stmt) {
             body.push_back(std::move(stmt));
         }
     }
 
-    consume(Token::token_type::NEWLINE);
+    consume(token_type::NEWLINE);
 
-    Ast::LambdaStmt lambda{token, std::move(params), std::move(body)};
-    auto lambda_node = std::make_unique<Ast::StmtNode>(Ast::StmtNode{std::move(lambda)});
+    LambdaStmt lambda{token, std::move(params), std::move(body)};
+    auto lambda_node = std::make_unique<StmtNode>(StmtNode{std::move(lambda)});
     return lambda_node;
 }
 
-Ast::StmtPtr Parser::parser_class::parse_statement() {
+StmtPtr parser_class::parse_statement() {
     switch (current_token().type) {
-        case Token::token_type::NEWLINE:
-            consume(Token::token_type::NEWLINE);
+        case token_type::NEWLINE:
+            consume(token_type::NEWLINE);
             return nullptr;
 
-        case Token::token_type::KEYWORD_DEF:
+        case token_type::KEYWORD_DEF:
             return parse_function_def();
 
-        case Token::token_type::KEYWORD_CLASS:
+        case token_type::KEYWORD_CLASS:
             return parse_class();
 
-        case Token::token_type::KEYWORD_IF:
+        case token_type::KEYWORD_IF:
             return parse_if_stmt();
 
-        case Token::token_type::KEYWORD_WHILE:
+        case token_type::KEYWORD_WHILE:
             return parse_while_stmt();
 
-        case Token::token_type::KEYWORD_FOR:
+        case token_type::KEYWORD_FOR:
             return parse_for_stmt();
 
-        case Token::token_type::KEYWORD_MATCH:
+        case token_type::KEYWORD_MATCH:
             return parse_match_stmt();
 
-        case Token::token_type::KEYWORD_CASE:
+        case token_type::KEYWORD_CASE:
             return parse_case();
 
-        case Token::token_type::KEYWORD_RETURN:
+        case token_type::KEYWORD_RETURN:
             return parse_return_stmt();
 
-        case Token::token_type::KEYWORD_PASS:
+        case token_type::KEYWORD_PASS:
             return parse_pass();
 
-        case Token::token_type::KEYWORD_TRY:
+        case token_type::KEYWORD_TRY:
             return parse_try();
 
-        case Token::token_type::KEYWORD_BREAK:
+        case token_type::KEYWORD_BREAK:
             return parse_break();
 
-        case Token::token_type::KEYWORD_CONTINUE:
+        case token_type::KEYWORD_CONTINUE:
             return parse_continue();
 
-        case Token::token_type::KEYWORD_LAMBDA:
+        case token_type::KEYWORD_LAMBDA:
             return parse_lambda();
 
         default: {
-            Token::token_class token {current_token()};
+            token_class token {current_token()};
             return parse_expression_stmt(token); 
         }
     }
 }
 
-Ast::StmtPtr Parser::parser_class::parse_expression_stmt(const auto& token) {
+StmtPtr parser_class::parse_expression_stmt(const auto& token) {
     auto expr = parse_assignment();
     if (expr) {
-        Ast::ExpressionStmt expr_stmt{token, std::move(expr)};
-        auto expr_node = std::make_unique<Ast::StmtNode>(Ast::StmtNode{std::move(expr_stmt)});
+        ExpressionStmt expr_stmt{token, std::move(expr)};
+        auto expr_node = std::make_unique<StmtNode>(StmtNode{std::move(expr_stmt)});
         return expr_node;
     }
 
     return {};
 }
 
-Ast::ExprPtr Parser::parser_class::parse_self() {
-    Token::token_class token = current_token();
-    consume(Token::token_type::KEYWORD_SELF);
+ExprPtr parser_class::parse_self() {
+    token_class token = current_token();
+    consume(token_type::KEYWORD_SELF);
 
-    std::unique_ptr<Ast::Identifier> attr;
-    if (match(Token::token_type::DOT)) {
-        consume(Token::token_type::DOT);
-        if (!match(Token::token_type::IDENTIFIER)) {
+    std::unique_ptr<Identifier> attr;
+    if (match(token_type::DOT)) {
+        consume(token_type::DOT);
+        if (!match(token_type::IDENTIFIER)) {
             debug_syntax_error();
         }
-        attr = std::make_unique<Ast::Identifier>(current_token());
+        attr = std::make_unique<Identifier>(current_token());
         consume();
     }
 
-    Ast::SelfExpr self{token, std::move(attr)};
-    auto self_node = std::make_unique<Ast::ExprNode>(Ast::ExprNode{std::move(self)});
+    SelfExpr self{token, std::move(attr)};
+    auto self_node = std::make_unique<ExprNode>(ExprNode{std::move(self)});
     return self_node;
 }
 
-Ast::StmtPtr Parser::parser_class::parse_try() {
-    Token::token_class token = current_token();
-    consume(Token::token_type::KEYWORD_TRY);
+StmtPtr parser_class::parse_try() {
+    token_class token = current_token();
+    consume(token_type::KEYWORD_TRY);
 
     consume_newline();
-    Ast::Block try_body = parse_block();
+    Block try_body = parse_block();
 
-    std::unique_ptr<Ast::ExceptStmt> except_branch {nullptr};
-    if (match(Token::token_type::KEYWORD_EXCEPT)) {
-        Token::token_class except_token = current_token();
-        consume(Token::token_type::KEYWORD_EXCEPT);
-
-        consume_newline();
-        Ast::Block except_body = parse_block();
-
-        except_branch = std::make_unique<Ast::ExceptStmt>(except_token, std::move(except_body));
-    }
-
-    std::unique_ptr<Ast::FinallyStmt> finally_branch {nullptr};
-    if (match(Token::token_type::KEYWORD_FINALLY)) {
-        Token::token_class finally_token = current_token();
-        consume(Token::token_type::KEYWORD_FINALLY);
+    std::unique_ptr<ExceptStmt> except_branch {nullptr};
+    if (match(token_type::KEYWORD_EXCEPT)) {
+        token_class except_token = current_token();
+        consume(token_type::KEYWORD_EXCEPT);
 
         consume_newline();
-        Ast::Block finally_body = parse_block();
+        Block except_body = parse_block();
 
-        finally_branch = std::make_unique<Ast::FinallyStmt>(finally_token, std::move(finally_body));
+        except_branch = std::make_unique<ExceptStmt>(except_token, std::move(except_body));
     }
 
-    std::unique_ptr<Ast::ElseStmt> else_branch {};
-    if (match(Token::token_type::KEYWORD_ELSE)) {
-        Token::token_class else_token = current_token();
-        consume(Token::token_type::KEYWORD_ELSE);
+    std::unique_ptr<FinallyStmt> finally_branch {nullptr};
+    if (match(token_type::KEYWORD_FINALLY)) {
+        token_class finally_token = current_token();
+        consume(token_type::KEYWORD_FINALLY);
 
         consume_newline();
-        Ast::Block else_body = parse_block();
+        Block finally_body = parse_block();
 
-        else_branch = std::make_unique<Ast::ElseStmt>(else_token, std::move(else_body));
+        finally_branch = std::make_unique<FinallyStmt>(finally_token, std::move(finally_body));
     }
 
-    Ast::TryStmt try_stmt{token, std::move(try_body), std::move(except_branch), std::move(finally_branch), std::move(else_branch)};
-    auto try_node = std::make_unique<Ast::StmtNode>(Ast::StmtNode{std::move(try_stmt)});
+    std::unique_ptr<ElseStmt> else_branch {};
+    if (match(token_type::KEYWORD_ELSE)) {
+        token_class else_token = current_token();
+        consume(token_type::KEYWORD_ELSE);
+
+        consume_newline();
+        Block else_body = parse_block();
+
+        else_branch = std::make_unique<ElseStmt>(else_token, std::move(else_body));
+    }
+
+    TryStmt try_stmt{token, std::move(try_body), std::move(except_branch), std::move(finally_branch), std::move(else_branch)};
+    auto try_node = std::make_unique<StmtNode>(StmtNode{std::move(try_stmt)});
     return try_node;
 }
 
-Ast::StmtPtr Parser::parser_class::parse_pass() {
-    Token::token_class token = current_token();
-    consume(Token::token_type::KEYWORD_PASS);
+StmtPtr parser_class::parse_pass() {
+    token_class token = current_token();
+    consume(token_type::KEYWORD_PASS);
 
-    Ast::PassStmt pass{token};
-    auto pass_node = std::make_unique<Ast::StmtNode>(Ast::StmtNode{std::move(pass)});
+    PassStmt pass{token};
+    auto pass_node = std::make_unique<StmtNode>(StmtNode{std::move(pass)});
     return pass_node;
 }
 
-Ast::ExprPtr Parser::parser_class::parse_assignment() {
+ExprPtr parser_class::parse_assignment() {
     auto left = parse_logical_or();
 
-    if (match(Token::token_type::EQUAL)) {
-        Token::token_class token = current_token();
-        consume(Token::token_type::EQUAL);
+    if (match(token_type::EQUAL)) {
+        token_class token = current_token();
+        consume(token_type::EQUAL);
 
-        Ast::AssignmentOp assign{token, std::move(left), parse_assignment()};
-        auto assign_node = std::make_unique<Ast::ExprNode>(Ast::ExprNode{std::move(assign)});
+        AssignmentOp assign{token, std::move(left), parse_assignment()};
+        auto assign_node = std::make_unique<ExprNode>(ExprNode{std::move(assign)});
         return assign_node;
-    } else if (match(Token::token_type::PLUS_EQUAL) ||
-               match(Token::token_type::MINUS_EQUAL) ||
-               match(Token::token_type::STAR_EQUAL) ||
-               match(Token::token_type::SLASH_EQUAL)) {
-        Token::token_class op = current_token();
+    } else if (match(token_type::PLUS_EQUAL) ||
+               match(token_type::MINUS_EQUAL) ||
+               match(token_type::STAR_EQUAL) ||
+               match(token_type::SLASH_EQUAL)) {
+        token_class op = current_token();
         consume(current_token().type);
 
-        Ast::AugmentedAssignmentOp aug_assign{op, std::move(left), parse_assignment()};
-        auto aug_assign_node = std::make_unique<Ast::ExprNode>(Ast::ExprNode{std::move(aug_assign)});
+        AugmentedAssignmentOp aug_assign{op, std::move(left), parse_assignment()};
+        auto aug_assign_node = std::make_unique<ExprNode>(ExprNode{std::move(aug_assign)});
         return aug_assign_node;
     }
 
     return left;
 }
 
-Ast::StmtPtr Parser::parser_class::parse_return_stmt() {
-    Token::token_class token = current_token();
-    consume(Token::token_type::KEYWORD_RETURN);
+StmtPtr parser_class::parse_return_stmt() {
+    token_class token = current_token();
+    consume(token_type::KEYWORD_RETURN);
 
-    Ast::ExprPtr value;
-    if (!is_at_end() && !match(Token::token_type::NEWLINE)) {
+    ExprPtr value;
+    if (!is_at_end() && !match(token_type::NEWLINE)) {
         value = parse_expression_types();
     }
 
-    Ast::ReturnStmt ret{token, std::move(value)};
-    auto ret_node = std::make_unique<Ast::StmtNode>(Ast::StmtNode{std::move(ret)});
+    ReturnStmt ret{token, std::move(value)};
+    auto ret_node = std::make_unique<StmtNode>(StmtNode{std::move(ret)});
     return ret_node;
 }
 
-Ast::StmtPtr Parser::parser_class::parse_function_def() {
-    consume(Token::token_type::KEYWORD_DEF);
+StmtPtr parser_class::parse_function_def() {
+    consume(token_type::KEYWORD_DEF);
 
-    Token::token_class token = current_token();
-    if (!match(Token::token_type::IDENTIFIER)) {
+    token_class token = current_token();
+    if (!match(token_type::IDENTIFIER)) {
         debug_syntax_error();
     }
 
-    consume(Token::token_type::IDENTIFIER);
-    consume(Token::token_type::LPAREN);
+    consume(token_type::IDENTIFIER);
+    consume(token_type::LPAREN);
 
-    Ast::ParameterList params;
-    if (!match(Token::token_type::RPAREN)) {
-        if (match(Token::token_type::IDENTIFIER)) {
-            params.params.push_back(Ast::Parameter{current_token()});
-            consume(Token::token_type::IDENTIFIER);
+    ParameterList params;
+    if (!match(token_type::RPAREN)) {
+        if (match(token_type::IDENTIFIER)) {
+            params.params.push_back(Parameter{current_token()});
+            consume(token_type::IDENTIFIER);
         }
 
-        while (match(Token::token_type::COMMA)) {
-            consume(Token::token_type::COMMA);
-            if (match(Token::token_type::IDENTIFIER)) {
-                params.params.push_back(Ast::Parameter{current_token()});
-                consume(Token::token_type::IDENTIFIER);
+        while (match(token_type::COMMA)) {
+            consume(token_type::COMMA);
+            if (match(token_type::IDENTIFIER)) {
+                params.params.push_back(Parameter{current_token()});
+                consume(token_type::IDENTIFIER);
             }
         }
     }
 
-    consume(Token::token_type::RPAREN);
-    consume(Token::token_type::COLON);
+    consume(token_type::RPAREN);
+    consume(token_type::COLON);
 
     consume_line();
-    Ast::Block body = parse_block();
+    Block body = parse_block();
 
-    Ast::FunctionDef func{token, std::move(params), std::move(body)};
-    auto func_node = std::make_unique<Ast::StmtNode>(Ast::StmtNode{std::move(func)});
+    FunctionDef func{token, std::move(params), std::move(body)};
+    auto func_node = std::make_unique<StmtNode>(StmtNode{std::move(func)});
     return func_node;
 }
 
-Ast::StmtPtr Parser::parser_class::parse_class() {
-    consume(Token::token_type::KEYWORD_CLASS);
+StmtPtr parser_class::parse_class() {
+    consume(token_type::KEYWORD_CLASS);
 
-    Token::token_class token = current_token();
-    consume(Token::token_type::IDENTIFIER);
+    token_class token = current_token();
+    consume(token_type::IDENTIFIER);
 
-    consume(Token::token_type::COLON);
+    consume(token_type::COLON);
     consume_line();
 
-    Ast::Block body;
+    Block body;
     body.token = current_token();
 
-    while (!match(Token::token_type::DEDENT) && !is_at_end()) {
-        if (match(Token::token_type::KEYWORD_DEF)) {
+    while (!match(token_type::DEDENT) && !is_at_end()) {
+        if (match(token_type::KEYWORD_DEF)) {
             auto method = parse_method();
             if (method) {
                 body.statements.push_back(std::move(method));
@@ -599,244 +601,244 @@ Ast::StmtPtr Parser::parser_class::parse_class() {
         }
     }
 
-    consume(Token::token_type::DEDENT);
+    consume(token_type::DEDENT);
 
-    Ast::ClassDef cls{token, std::move(body)};
-    auto cls_node = std::make_unique<Ast::StmtNode>(Ast::StmtNode{std::move(cls)});
+    ClassDef cls{token, std::move(body)};
+    auto cls_node = std::make_unique<StmtNode>(StmtNode{std::move(cls)});
     return cls_node;
 }
 
-Ast::StmtPtr Parser::parser_class::parse_method() {
-    consume(Token::token_type::KEYWORD_DEF);
+StmtPtr parser_class::parse_method() {
+    consume(token_type::KEYWORD_DEF);
 
-    Token::token_class token = current_token();
-    if (!match(Token::token_type::IDENTIFIER) && !match(Token::token_type::KEYWORD_INIT)) {
+    token_class token = current_token();
+    if (!match(token_type::IDENTIFIER) && !match(token_type::KEYWORD_INIT)) {
         debug_syntax_error();
     }
 
-    if (match(Token::token_type::KEYWORD_INIT)) {
-        consume(Token::token_type::KEYWORD_INIT);
+    if (match(token_type::KEYWORD_INIT)) {
+        consume(token_type::KEYWORD_INIT);
     } else {
-        consume(Token::token_type::IDENTIFIER);
+        consume(token_type::IDENTIFIER);
     }
 
     valid_constructor = true; 
 
-    consume(Token::token_type::LPAREN);
+    consume(token_type::LPAREN);
 
-    Ast::ParameterList params;
-    if (!match(Token::token_type::KEYWORD_SELF)) {
+    ParameterList params;
+    if (!match(token_type::KEYWORD_SELF)) {
         debug_syntax_error();
     }
 
-    params.params.push_back(Ast::Parameter{current_token()});
-    consume(Token::token_type::KEYWORD_SELF);
+    params.params.push_back(Parameter{current_token()});
+    consume(token_type::KEYWORD_SELF);
 
-    while (match(Token::token_type::COMMA)) {
-        consume(Token::token_type::COMMA);
-        if (match(Token::token_type::IDENTIFIER)) {
-            params.params.push_back(Ast::Parameter{current_token()});
-            consume(Token::token_type::IDENTIFIER);
+    while (match(token_type::COMMA)) {
+        consume(token_type::COMMA);
+        if (match(token_type::IDENTIFIER)) {
+            params.params.push_back(Parameter{current_token()});
+            consume(token_type::IDENTIFIER);
         }
     }
 
-    consume(Token::token_type::RPAREN);
-    consume(Token::token_type::COLON);
+    consume(token_type::RPAREN);
+    consume(token_type::COLON);
 
     consume_line();
-    Ast::Block body = parse_block();
+    Block body = parse_block();
 
-    Ast::MethodDef method{token, std::move(params), std::move(body)};
-    auto method_node = std::make_unique<Ast::StmtNode>(Ast::StmtNode{std::move(method)});
+    MethodDef method{token, std::move(params), std::move(body)};
+    auto method_node = std::make_unique<StmtNode>(StmtNode{std::move(method)});
     return method_node;
 }
 
-Ast::StmtPtr Parser::parser_class::parse_break() {
-    Token::token_class token = current_token();
-    consume(Token::token_type::KEYWORD_BREAK);
+StmtPtr parser_class::parse_break() {
+    token_class token = current_token();
+    consume(token_type::KEYWORD_BREAK);
 
-    Ast::BreakStmt brk{token};
-    auto brk_node = std::make_unique<Ast::StmtNode>(Ast::StmtNode{std::move(brk)});
+    BreakStmt brk{token};
+    auto brk_node = std::make_unique<StmtNode>(StmtNode{std::move(brk)});
     return brk_node;
 }
 
-Ast::StmtPtr Parser::parser_class::parse_continue() {
-    Token::token_class token = current_token();
-    consume(Token::token_type::KEYWORD_CONTINUE);
+StmtPtr parser_class::parse_continue() {
+    token_class token = current_token();
+    consume(token_type::KEYWORD_CONTINUE);
 
-    Ast::ContinueStmt cont{token};
-    auto cont_node = std::make_unique<Ast::StmtNode>(Ast::StmtNode{std::move(cont)});
+    ContinueStmt cont{token};
+    auto cont_node = std::make_unique<StmtNode>(StmtNode{std::move(cont)});
     return cont_node;
 }
 
-Ast::StmtPtr Parser::parser_class::parse_if_stmt() {
-    Token::token_class token = current_token();
-    consume(Token::token_type::KEYWORD_IF);
+StmtPtr parser_class::parse_if_stmt() {
+    token_class token = current_token();
+    consume(token_type::KEYWORD_IF);
 
     auto condition = parse_logical_or();
 
     consume_newline();
-    Ast::Block body = parse_block();
+    Block body = parse_block();
 
-    std::vector<Ast::ElifStmt>  elifs {};
-    while (match(Token::token_type::KEYWORD_ELIF)) {
-        Token::token_class elif_token = current_token();
-        consume(Token::token_type::KEYWORD_ELIF);
+    std::vector<ElifStmt>  elifs {};
+    while (match(token_type::KEYWORD_ELIF)) {
+        token_class elif_token = current_token();
+        consume(token_type::KEYWORD_ELIF);
 
         auto elif_condition = parse_expression_types();
 
         consume_newline();
-        Ast::Block elif_body = parse_block();
+        Block elif_body = parse_block();
 
-        elifs.push_back(Ast::ElifStmt{elif_token, std::move(elif_condition), std::move(elif_body)});
+        elifs.push_back(ElifStmt{elif_token, std::move(elif_condition), std::move(elif_body)});
     }
 
-    std::unique_ptr<Ast::ElseStmt> else_branch;
-    if (match(Token::token_type::KEYWORD_ELSE)) {
-        Token::token_class else_token = current_token();
-        consume(Token::token_type::KEYWORD_ELSE);
+    std::unique_ptr<ElseStmt> else_branch;
+    if (match(token_type::KEYWORD_ELSE)) {
+        token_class else_token = current_token();
+        consume(token_type::KEYWORD_ELSE);
 
         consume_newline();
-        Ast::Block else_body = parse_block();
+        Block else_body = parse_block();
 
-        else_branch = std::make_unique<Ast::ElseStmt>(else_token, std::move(else_body));
+        else_branch = std::make_unique<ElseStmt>(else_token, std::move(else_body));
     }
 
-    Ast::IfStmt if_stmt{token, std::move(condition), std::move(body), std::move(elifs), std::move(else_branch)};
+    IfStmt if_stmt{token, std::move(condition), std::move(body), std::move(elifs), std::move(else_branch)};
     
-    auto if_node = std::make_unique<Ast::StmtNode>(Ast::StmtNode{std::move(if_stmt)});
+    auto if_node = std::make_unique<StmtNode>(StmtNode{std::move(if_stmt)});
     
     return if_node;
 }
 
-Ast::StmtPtr Parser::parser_class::parse_while_stmt() {
-    Token::token_class token = current_token();
-    consume(Token::token_type::KEYWORD_WHILE);
+StmtPtr parser_class::parse_while_stmt() {
+    token_class token = current_token();
+    consume(token_type::KEYWORD_WHILE);
 
     auto condition = parse_logical_or();
 
     consume_newline();
-    Ast::Block body = parse_block();
+    Block body = parse_block();
 
-    Ast::WhileStmt while_stmt{token, std::move(condition), std::move(body)};
-    auto while_node = std::make_unique<Ast::StmtNode>(Ast::StmtNode{std::move(while_stmt)});
+    WhileStmt while_stmt{token, std::move(condition), std::move(body)};
+    auto while_node = std::make_unique<StmtNode>(StmtNode{std::move(while_stmt)});
     return while_node;
 }
 
-Ast::StmtPtr Parser::parser_class::parse_for_stmt() {
-    Token::token_class token = current_token();
-    consume(Token::token_type::KEYWORD_FOR);
+StmtPtr parser_class::parse_for_stmt() {
+    token_class token = current_token();
+    consume(token_type::KEYWORD_FOR);
 
-    Ast::Identifier variable{current_token()};
-    if (match(Token::token_type::IDENTIFIER)) {
-        consume(Token::token_type::IDENTIFIER);
+    Identifier variable{current_token()};
+    if (match(token_type::IDENTIFIER)) {
+        consume(token_type::IDENTIFIER);
     }
 
-    consume(Token::token_type::KEYWORD_IN);
+    consume(token_type::KEYWORD_IN);
 
     auto iterable = parse_expression_types();
 
     consume_newline();
-    Ast::Block body = parse_block();
+    Block body = parse_block();
 
-    Ast::ForStmt for_stmt{token, std::move(variable), std::move(iterable), std::move(body)};
-    auto for_node = std::make_unique<Ast::StmtNode>(Ast::StmtNode{std::move(for_stmt)});
+    ForStmt for_stmt{token, std::move(variable), std::move(iterable), std::move(body)};
+    auto for_node = std::make_unique<StmtNode>(StmtNode{std::move(for_stmt)});
     return for_node;
 }
 
-Ast::StmtPtr Parser::parser_class::parse_match_stmt() {
-    Token::token_class token = current_token();
-    consume(Token::token_type::KEYWORD_MATCH);
+StmtPtr parser_class::parse_match_stmt() {
+    token_class token = current_token();
+    consume(token_type::KEYWORD_MATCH);
 
     auto subject = parse_expression_types();
 
     consume_newline();
-    std::vector<Ast::CaseStmt> cases;
-    while (match(Token::token_type::KEYWORD_CASE) && !is_at_end()) {
-        Token::token_class case_token = current_token();
-        consume(Token::token_type::KEYWORD_CASE);
+    std::vector<CaseStmt> cases;
+    while (match(token_type::KEYWORD_CASE) && !is_at_end()) {
+        token_class case_token = current_token();
+        consume(token_type::KEYWORD_CASE);
 
         auto pattern = parse_expression_types();
 
         consume_newline();
-        Ast::Block case_body = parse_block();
+        Block case_body = parse_block();
 
-        cases.push_back(Ast::CaseStmt{case_token, std::move(pattern), std::move(case_body)});
+        cases.push_back(CaseStmt{case_token, std::move(pattern), std::move(case_body)});
     }
 
-    consume(Token::token_type::DEDENT);
+    consume(token_type::DEDENT);
 
-    Ast::MatchStmt match_stmt{token, std::move(subject), std::move(cases)};
-    auto match_node = std::make_unique<Ast::StmtNode>(Ast::StmtNode{std::move(match_stmt)});
+    MatchStmt match_stmt{token, std::move(subject), std::move(cases)};
+    auto match_node = std::make_unique<StmtNode>(StmtNode{std::move(match_stmt)});
     return match_node;
 }
 
-Ast::StmtPtr Parser::parser_class::parse_case() {
-    Token::token_class token = current_token();
-    consume(Token::token_type::KEYWORD_CASE);
+StmtPtr parser_class::parse_case() {
+    token_class token = current_token();
+    consume(token_type::KEYWORD_CASE);
 
     auto pattern = parse_expression_types();
 
     consume_newline();
-    Ast::Block body = parse_block();
+    Block body = parse_block();
 
-    Ast::CaseStmt case_stmt{token, std::move(pattern), std::move(body)};
-    auto case_node = std::make_unique<Ast::StmtNode>(Ast::StmtNode{std::move(case_stmt)});
+    CaseStmt case_stmt{token, std::move(pattern), std::move(body)};
+    auto case_node = std::make_unique<StmtNode>(StmtNode{std::move(case_stmt)});
     return case_node;
 }
 
-Ast::ExprPtr Parser::parser_class::parse_list() {
-    Token::token_class token = current_token();
-    consume(Token::token_type::LBRACKET);
+ExprPtr parser_class::parse_list() {
+    token_class token = current_token();
+    consume(token_type::LBRACKET);
 
-    Ast::ListExpr list{token, {}};
+    ListExpr list{token, {}};
 
-    if (match(Token::token_type::RBRACKET)) {
-        consume(Token::token_type::RBRACKET);
-        auto list_node = std::make_unique<Ast::ExprNode>(Ast::ExprNode{std::move(list)});
+    if (match(token_type::RBRACKET)) {
+        consume(token_type::RBRACKET);
+        auto list_node = std::make_unique<ExprNode>(ExprNode{std::move(list)});
         return list_node;
     }
 
     list.elements.push_back(parse_expression_types());
 
-    while (match(Token::token_type::COMMA)) {
-        consume(Token::token_type::COMMA);
+    while (match(token_type::COMMA)) {
+        consume(token_type::COMMA);
 
-        if (match(Token::token_type::RBRACKET)) {
+        if (match(token_type::RBRACKET)) {
             break;
         }
 
         list.elements.push_back(parse_expression_types());
     }
 
-    consume(Token::token_type::RBRACKET);
-    auto list_node = std::make_unique<Ast::ExprNode>(Ast::ExprNode{std::move(list)});
+    consume(token_type::RBRACKET);
+    auto list_node = std::make_unique<ExprNode>(ExprNode{std::move(list)});
     return list_node;
 }
 
-Ast::ExprPtr Parser::parser_class::parse_dict() {
-    Token::token_class token = current_token();
-    consume(Token::token_type::LCBRACE);
+ExprPtr parser_class::parse_dict() {
+    token_class token = current_token();
+    consume(token_type::LCBRACE);
 
-    Ast::DictExpr dict{token, {}};
+    DictExpr dict{token, {}};
 
-    if (match(Token::token_type::RCBRACE)) {
-        consume(Token::token_type::RCBRACE);
-        auto dict_node = std::make_unique<Ast::ExprNode>(Ast::ExprNode{std::move(dict)});
+    if (match(token_type::RCBRACE)) {
+        consume(token_type::RCBRACE);
+        auto dict_node = std::make_unique<ExprNode>(ExprNode{std::move(dict)});
         return dict_node;
     }
 
     auto key = parse_expression_types();
 
-    while (match(Token::token_type::COLON) || match(Token::token_type::COMMA)) {
-        consume(Token::token_type::COLON);
+    while (match(token_type::COLON) || match(token_type::COMMA)) {
+        consume(token_type::COLON);
         auto value = parse_expression_types();
         dict.entries.push_back({std::move(key), std::move(value)});
 
-        if (match(Token::token_type::COMMA)) {
-            consume(Token::token_type::COMMA);
+        if (match(token_type::COMMA)) {
+            consume(token_type::COMMA);
 
-            if (match(Token::token_type::RCBRACE)) {
+            if (match(token_type::RCBRACE)) {
                 break;
             }
 
@@ -844,35 +846,37 @@ Ast::ExprPtr Parser::parser_class::parse_dict() {
         }
     }
 
-    consume(Token::token_type::RCBRACE);
-    auto dict_node = std::make_unique<Ast::ExprNode>(Ast::ExprNode{std::move(dict)});
+    consume(token_type::RCBRACE);
+    auto dict_node = std::make_unique<ExprNode>(ExprNode{std::move(dict)});
     return dict_node;
 }
 
-Ast::ExprPtr Parser::parser_class::parse_logical_and() {
+ExprPtr parser_class::parse_logical_and() {
     auto left = parse_equality();
 
-    while (match(Token::token_type::KEYWORD_AND)) {
-        Token::token_class op { current_token() };
+    while (match(token_type::KEYWORD_AND)) {
+        token_class op { current_token() };
         consume();
 
-        Ast::AndOp and_op{op, std::move(left), parse_equality()};
-        left = std::make_unique<Ast::ExprNode>(Ast::ExprNode{std::move(and_op)});
+        AndOp and_op{op, std::move(left), parse_equality()};
+        left = std::make_unique<ExprNode>(ExprNode{std::move(and_op)});
     }
 
     return left;
 }
 
-Ast::ExprPtr Parser::parser_class::parse_logical_or() {
+ExprPtr parser_class::parse_logical_or() {
     auto left = parse_logical_and();
 
-    while (match(Token::token_type::KEYWORD_OR)) {
-        Token::token_class op { current_token() };
+    while (match(token_type::KEYWORD_OR)) {
+        token_class op { current_token() };
         consume();
 
-        Ast::OrOp or_op{op, std::move(left), parse_logical_and()};
-        left = std::make_unique<Ast::ExprNode>(Ast::ExprNode{std::move(or_op)});
+        OrOp or_op{op, std::move(left), parse_logical_and()};
+        left = std::make_unique<ExprNode>(ExprNode{std::move(or_op)});
     }
 
     return left;
 }
+
+} 

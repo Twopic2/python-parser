@@ -28,23 +28,23 @@ Expr → Base [ op Expr ]   (uses recursion, not loop)
 */
 
 
-namespace Parser {
+namespace TwoPy::Frontend {
     /* I decided upon a recursive descent appoarch */
     class parser_class {
         private:
             /* Should make is a vector of bools */
             bool valid_constructor = false;
             
-            std::vector<Token::token_class> tokens {};
+            std::vector<token_class> tokens {};
             std::size_t current_pos {};
             std::size_t m_previous_pos {};
             
-            Token::token_class& current_token();
-            Token::token_class& previous_token();
+            token_class& current_token();
+            token_class& previous_token();
 
             int m_error_count {};
 
-            bool match(const Token::token_type& type);
+            bool match(const token_type& type);
 
             // Might be useful to track the amount of errors
             void debug_syntax_error() {
@@ -55,7 +55,7 @@ namespace Parser {
             }
 
             // Special thanks to DerkT for fixing up my code!
-            template <typename TokenType, typename ... Rest> requires (std::same_as<TokenType, Token::token_type>)
+            template <typename TokenType, typename ... Rest> requires (std::same_as<TokenType, token_type>)
             bool match(TokenType first_type, Rest ... more_types) noexcept {
                 const auto current_tag = tokens.at(current_pos).type;
                 return ((current_tag == first_type) || ... || (current_tag == more_types));
@@ -89,55 +89,55 @@ namespace Parser {
             }
 
             // Something that produces a value
-            Ast::ExprPtr parse_expression_types();
+            ExprPtr parse_expression_types();
             // Performs a action ex: if, while, for, return
-            Ast::StmtPtr parse_statement();
+            StmtPtr parse_statement();
 
-            Ast::StmtPtr parse_function_def();
-            Ast::StmtPtr parse_class();
-            Ast::StmtPtr parse_if_stmt();
-            Ast::StmtPtr parse_while_stmt();
-            Ast::StmtPtr parse_for_stmt();
-            Ast::StmtPtr parse_match_stmt();
-            Ast::StmtPtr parse_return_stmt();
-            Ast::StmtPtr parse_pass();
-            Ast::StmtPtr parse_try();
-            Ast::StmtPtr parse_break();
-            Ast::StmtPtr parse_continue();
-            Ast::StmtPtr parse_method();
-            Ast::StmtPtr parse_lambda();
+            StmtPtr parse_function_def();
+            StmtPtr parse_class();
+            StmtPtr parse_if_stmt();
+            StmtPtr parse_while_stmt();
+            StmtPtr parse_for_stmt();
+            StmtPtr parse_match_stmt();
+            StmtPtr parse_return_stmt();
+            StmtPtr parse_pass();
+            StmtPtr parse_try();
+            StmtPtr parse_break();
+            StmtPtr parse_continue();
+            StmtPtr parse_method();
+            StmtPtr parse_lambda();
 
-            Ast::StmtPtr parse_expression_stmt(const auto& token);
+            StmtPtr parse_expression_stmt(const auto& token);
 
-            Ast::ExprPtr parse_list();
-            Ast::ExprPtr parse_dict();
+            ExprPtr parse_list();
+            ExprPtr parse_dict();
 
-            Ast::ExprPtr parse_call_expr(Ast::ExprPtr callee);
-            Ast::ExprPtr parse_constructor_call(Ast::ExprPtr constructor);
-            Ast::ExprPtr parse_attribute_expr();
-            Ast::ExprPtr parse_self();
+            ExprPtr parse_call_expr(ExprPtr callee);
+            ExprPtr parse_constructor_call(ExprPtr constructor);
+            ExprPtr parse_attribute_expr();
+            ExprPtr parse_self();
 
-            Ast::ExprPtr parse_term();
-            Ast::ExprPtr parse_factor();
-            Ast::ExprPtr parse_power();
-            Ast::StmtPtr parse_case();
-            Ast::ExprPtr parse_equality();
-            Ast::ExprPtr parse_comparator();
-            Ast::ExprPtr parse_assignment();
-            Ast::ExprPtr parse_bitwise();
-            Ast::ExprPtr parse_logical_or();
-            Ast::ExprPtr parse_logical_and();
+            ExprPtr parse_term();
+            ExprPtr parse_factor();
+            ExprPtr parse_power();
+            StmtPtr parse_case();
+            ExprPtr parse_equality();
+            ExprPtr parse_comparator();
+            ExprPtr parse_assignment();
+            ExprPtr parse_bitwise();
+            ExprPtr parse_logical_or();
+            ExprPtr parse_logical_and();
 
-            Ast::Block parse_block();
+            Block parse_block();
 
             void consume_newline();
             void consume_line();
 
         public:
-            parser_class(Lexical::lexical_class& lexer);
+            parser_class(lexical_class& lexer);
 
             /* Parses the file */
-            Ast::Program parse();
+            Program parse();
     };
 }
 

@@ -14,7 +14,7 @@
 Lexer (Lexical Analysis): Checking spelling. (Is "appl" a word? No. Is "apple" a word? Yes.)
 */
 
-namespace Lexical {
+namespace TwoPy::Frontend {
     std::string read_file(std::string_view filename);
     class lexical_class {
         private:
@@ -23,11 +23,11 @@ namespace Lexical {
             std::size_t m_line {};
             std::size_t m_column {};
 
-            std::unordered_map<std::string, Token::token_type> predefined_keyword {};
+            std::unordered_map<std::string, token_type> predefined_keyword {};
             std::vector<std::size_t> indent {};
             void next_token();
              // Variable, Classes, etc etc names  
-            void handle_indentation(std::vector<Token::token_class>& tokens, std::size_t start_line);
+            void handle_indentation(std::vector<token_class>& tokens, std::size_t start_line);
 
             bool is_string() const;
             bool is_float() const;
@@ -39,9 +39,9 @@ namespace Lexical {
             lexical_class(const std::string& source);
 
             /* tokenize the input strings */
-            std::vector<Token::token_class> tokenize();
+            std::vector<token_class> tokenize();
 
-            std::string token_type_name(const Token::token_class& type);
+            std::string token_type_name(const token_class& type);
     };
 }
 

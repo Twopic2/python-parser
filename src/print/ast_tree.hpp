@@ -7,6 +7,8 @@
 #include "frontend/ast.hpp"
 
 namespace AstPrinter {
+    namespace Ast = TwoPy::Frontend;
+    namespace Token = TwoPy::Frontend;
 
 inline void print_indent(int depth) {
     for (int i = 0; i < depth; ++i) {

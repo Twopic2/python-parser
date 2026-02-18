@@ -8,6 +8,7 @@ One would be to use std::hold_alternative which you'll have to manually check
 or use std::visit which allows for more cleaner code in the future.
 */
 namespace TwoPy::Backend {
+    using namespace TwoPy::Frontend;
     compiler::compiler(const Ast::Program& program)
         : m_program(program) {
         m_bytecode_program.name = "<module>";
