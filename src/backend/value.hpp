@@ -5,6 +5,7 @@
 #include <utility>
 #include <variant>
 #include <string>
+#include <memory>
 
 #include "backend/objects.hpp"
 
@@ -27,7 +28,7 @@ namespace TwoPy::Backend {
 
     class Value {
     public:
-        using py_object_ptr = ObjectBase*;
+        using py_object_ptr = std::shared_ptr<ObjectBase>;
         using hidden_data = std::variant<std::monostate, long, double, Reference, py_object_ptr>;
     private:
         template <typename NativeType>

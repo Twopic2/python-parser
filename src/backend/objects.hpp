@@ -2,6 +2,7 @@
 #define TWOPY_OBJECTS_HPP
 
 #include <string>
+#include <vector>
 #include <memory>
 #include <type_traits>
 
@@ -41,6 +42,7 @@ namespace TwoPy::Backend {
         //virtual bool call([[maybe_unused]] void* vm_state, [[maybe_unused]] uint8_t arg_count) = 0;
 
        /// NOTE: for __str__(self) converts different types to string
+       /// Useful for printing out debug stmts inside the bytecode print
         virtual std::string stringify() = 0;
 
         virtual bool is_truthy() const noexcept = 0;
@@ -48,23 +50,35 @@ namespace TwoPy::Backend {
 
     class FunctionPyObject : public ObjectBase {
         private:
-            std::string name;
-            std::vector<std::string> params;
-            /* Chunk func_init {};
- */
+            std::string m_name;
+            std::vector<std::string> m_params;
+            std::uint8_t m_chunk_index {};
+
         public:
-            explicit FunctionPyObject(std::string& data, std::vector<std::string>& vec) : name(std::move(data)), params(std::move(vec)) {}
+            explicit FunctionPyObject(std::string name, std::vector<std::string> params, std::uint8_t chunk_index)
+                : m_name(std::move(name)), m_params(std::move(params)), m_chunk_index(chunk_index) {}
 
             ObjectTag tag() const noexcept override {
                 return ObjectTag::FUNCTION;
             }
 
+            /* Useful for printing out debug */
+            [[nodiscard]] std::uint8_t get_chunk_index() const noexcept {
+                return m_chunk_index;
+            }
+
+            /* Useful for printing out debug */
+            [[nodiscard]] const std::vector<std::string>& get_params() const noexcept {
+                return m_params;
+            }
+
+            /* Gets called when the printer calls it */
             [[nodiscard]] std::string stringify() override {
-                return fmt::format("Function {}", name);
+                return fmt::format("<code object {} at {}>", m_name, fmt::ptr(this));
             }
 
             [[nodiscard]] bool is_truthy() const noexcept override {
-                return !name.empty();
+                return !m_name.empty();
             }
     };
 
@@ -87,6 +101,7 @@ namespace TwoPy::Backend {
                 return false;
             }*/
 
+            /* Gets called when the printer calls it */
             std::string stringify() override {
                 return m_data;
             }

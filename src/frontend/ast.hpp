@@ -309,15 +309,15 @@ namespace TwoPy::Frontend {
     /* Expr node */
     struct ExprNode {
         std::variant<
-            Literals,
-            OperatorsType,
             Identifier,
             CallExpr,
             ConstructorCallExpr,
             AttributeExpr,
             ListExpr,
             DictExpr,
-            SelfExpr> node;
+            SelfExpr,
+            Literals,
+            OperatorsType> node;
     };
 
      /* Statement Node */

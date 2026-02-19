@@ -1,7 +1,7 @@
 import dis
 
 code = """
-x = bool(1)
+a = print("hi")
 """
 
 dis.dis(code)

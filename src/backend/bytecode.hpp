@@ -34,9 +34,11 @@ namespace TwoPy::Backend {
 
         STORE_VARIABLE,
         STORE_FAST, // Local vars
+        STORE_NAME, // Stuff like Classes, Functions, Dicts, Lists, etc etc
 
         LOAD_VARIABLE,
-        LOAD_FAST, // Local vars
+        LOAD_FAST,  // Local vars
+        LOAD_NAME,  // Module-level (mirrors STORE_NAME)
         LOAD_CONSTANT,
     };
 
@@ -49,24 +51,26 @@ namespace TwoPy::Backend {
     struct Chunk {
         std::vector<Instruction> code;
         std::vector<Value> consts_pool;
-        std::vector<std::string> vars_pool;
+        std::vector<std::string> names_pool;
     };
 
     struct ByteCodeProgram {
         std::string name;
-        std::vector<Chunk> chunks;
+        std::vector<std::shared_ptr<Chunk>> chunks;
     };
 
     class compiler {
     private:
         const TwoPy::Frontend::Program& m_program;
 
+        bool is_in_function = false;
+        bool is_pop = false;
+
         std::map<std::string, std::uint8_t> global_vars {};
 
-        Chunk* m_curr_chunk {};
-        Chunk* m_prev_chunk {};
-
-        std::vector<std::unique_ptr<ObjectBase>> object_pool;
+        std::shared_ptr<Chunk> m_curr_chunk {};
+        /* Meant for functions */
+        std::shared_ptr<Chunk> m_prev_chunk {};
 
         ByteCodeProgram m_bytecode_program {};
 
@@ -79,6 +83,7 @@ namespace TwoPy::Backend {
         void disassemble_literals(const TwoPy::Frontend::Literals& lits);
 
         void disassemble_function_object(const TwoPy::Frontend::FunctionDef& function);
+        void disassemble_callexpr_object(const TwoPy::Frontend::CallExpr& callee);
 
     public:
         compiler(const TwoPy::Frontend::Program& program);

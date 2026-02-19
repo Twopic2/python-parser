@@ -32,8 +32,10 @@ namespace BytePrinter {
             case OpCode::BINARY_POWER: return "BINARY_POWER";
             case OpCode::STORE_VARIABLE: return "STORE_VARIABLE";
             case OpCode::STORE_FAST: return "STORE_FAST";
+            case OpCode::STORE_NAME: return "STORE_NAME";
             case OpCode::LOAD_VARIABLE: return "LOAD_VARIABLE";
             case OpCode::LOAD_FAST: return "LOAD_FAST";
+            case OpCode::LOAD_NAME: return "LOAD_NAME";
             case OpCode::LOAD_CONSTANT: return "LOAD_CONSTANT";
             default: return "UNKNOWN";
         }
@@ -85,10 +87,12 @@ namespace BytePrinter {
             case OpCode::LOAD_VARIABLE:
             case OpCode::STORE_FAST:
             case OpCode::LOAD_FAST:
-                if (instr.argument < chunk.vars_pool.size()) {
+            case OpCode::LOAD_NAME:
+            case OpCode::STORE_NAME:
+                if (instr.argument < chunk.names_pool.size()) {
                     fmt::print(" {:>3}  ({})",
                               instr.argument,
-                              chunk.vars_pool[instr.argument]);
+                              chunk.names_pool[instr.argument]);
                 } else {
                     fmt::print(" {:>3}  <invalid variable index>", instr.argument);
                 }
@@ -119,9 +123,9 @@ namespace BytePrinter {
         fmt::print("]\n");
 
         fmt::print("Variables: [");
-        for (size_t i = 0; i < chunk.vars_pool.size(); ++i) {
+        for (size_t i = 0; i < chunk.names_pool.size(); ++i) {
             if (i > 0) fmt::print(", ");
-            fmt::print("'{}'", chunk.vars_pool[i]);
+            fmt::print("'{}'", chunk.names_pool[i]);
         }
         fmt::print("]\n\n");
 
@@ -140,7 +144,7 @@ namespace BytePrinter {
 
         for (size_t i = 0; i < program.chunks.size(); ++i) {
             std::string chunk_name = (i == 0) ? "<module>" : fmt::format("<chunk {}>", i);
-            disassemble_chunk(program.chunks[i], chunk_name);
+            disassemble_chunk(*program.chunks[i], chunk_name);
         }
 
         fmt::print("=== End of {} ===\n", program.name);
