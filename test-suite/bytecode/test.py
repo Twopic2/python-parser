@@ -1,7 +1,14 @@
 import dis
 
 code = """
-a = print("hi")
+
+add(x):
+    return x + 1
+
+y = 0
+
+z = add(y)
+
 """
 
 dis.dis(code)

@@ -40,7 +40,7 @@ namespace TwoPy::Backend {
             if (expr_stmt->expression) {
                 disassemble_expr(*expr_stmt->expression);
             } else {
-                throw std::runtime_error("Something went wrong"); 
+                throw std::runtime_error("Something went wrong");
             }
         }
 
@@ -66,7 +66,6 @@ namespace TwoPy::Backend {
     }
 
     void compiler::disassemble_operators(const TwoPy::Frontend::OperatorsType& ops) {
-        /// NOTE: Include a is POP for anything callee that don't do include any form of assignment ops
         if (auto* assign = std::get_if<TwoPy::Frontend::AssignmentOp>(&ops)) {
             if (assign->value) {
                 disassemble_expr(*assign->value);
@@ -74,11 +73,11 @@ namespace TwoPy::Backend {
 
             if (assign->target) {
                 if (auto* ident = std::get_if<TwoPy::Frontend::Identifier>(&assign->target->node)) {
-                    uint8_t var_index;
+                    std::uint8_t var_index;
 
                     if (!global_vars.contains(ident->token.value)) {
                         m_curr_chunk->names_pool.push_back(ident->token.value);
-                        var_index = static_cast<uint8_t>(m_curr_chunk->names_pool.size() - 1);
+                        var_index = static_cast<std::uint8_t>(m_curr_chunk->names_pool.size() - 1);
                         global_vars.insert({ident->token.value, var_index});
                     } else {
                         var_index = global_vars.at(ident->token.value);

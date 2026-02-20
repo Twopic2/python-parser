@@ -64,7 +64,6 @@ namespace TwoPy::Backend {
         const TwoPy::Frontend::Program& m_program;
 
         bool is_in_function = false;
-        bool is_pop = false;
 
         std::map<std::string, std::uint8_t> global_vars {};
 
