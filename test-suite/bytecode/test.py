@@ -1,14 +1,11 @@
 import dis
 
 code = """
+x = 1
 
-add(x):
-    return x + 1
-
-y = 0
-
-z = add(y)
-
+if x:
+    x
 """
+
 
 dis.dis(code)

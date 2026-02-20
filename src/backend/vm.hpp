@@ -11,8 +11,21 @@ namespace TwoPy::Backend {
         // 1. Make a value stack, call frame stack, stack index, instruction pointer, status code, and more...
         // 2. To start, pretend that PyFunctions are just readonly wrappers around a pointer into a Chunk? The VM just needs to enter its instruction pointer into that function code. Getting it working is 1st priority.
 
+        const ByteCodeProgram m_prgm {};
+
+        enum class ErrorCode : std::uint8_t {
+            OK,
+            ERROR,
+        };
+
+        struct ValueStack {
+            std::uint8_t m_caller_ret_ip;
+
+            int m_callee_sbp;
+            int m_caller_sbp; 
+        };
+
     public:
-        /// TODO: initialize state mentioned above with program??
         VM(const ByteCodeProgram& prgm);
 
         /// TODO: implement opcodes & run.

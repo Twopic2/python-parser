@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <ranges>
+#include <algorithm>
 
 #include "backend/value.hpp"
 #include "frontend/ast.hpp"
@@ -36,6 +38,10 @@ namespace TwoPy::Backend {
         STORE_FAST, // Local vars
         STORE_NAME, // Stuff like Classes, Functions, Dicts, Lists, etc etc
 
+        COMPARE_OP,
+
+        POP_JUMP_IF_FALSE,
+
         LOAD_VARIABLE,
         LOAD_FAST,  // Local vars
         LOAD_NAME,  // Module-level (mirrors STORE_NAME)
@@ -52,6 +58,7 @@ namespace TwoPy::Backend {
         std::vector<Instruction> code;
         std::vector<Value> consts_pool;
         std::vector<std::string> names_pool;
+        std::size_t byte_offset;
     };
 
     struct ByteCodeProgram {
@@ -68,10 +75,8 @@ namespace TwoPy::Backend {
         std::map<std::string, std::uint8_t> global_vars {};
 
         std::shared_ptr<Chunk> m_curr_chunk {};
-        /* Meant for functions */
-        std::shared_ptr<Chunk> m_prev_chunk {};
 
-        ByteCodeProgram m_bytecode_program {};
+        ByteCodeProgram m_bytecode_program {};     
 
         void disassemble_instruction(const TwoPy::Frontend::StmtPtr& stmt);
 
@@ -83,6 +88,8 @@ namespace TwoPy::Backend {
 
         void disassemble_function_object(const TwoPy::Frontend::FunctionDef& function);
         void disassemble_callexpr_object(const TwoPy::Frontend::CallExpr& callee);
+
+        void disassemble_if_stmt(const TwoPy::Frontend::IfStmt& stmt);
 
     public:
         compiler(const TwoPy::Frontend::Program& program);
