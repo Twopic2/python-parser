@@ -66,6 +66,7 @@ namespace TwoPy::Backend {
         std::uint8_t futre = static_cast<std::uint8_t>(m_curr_chunk->byte_offset + 2);
         m_curr_chunk->code.push_back({OpCode::POP_JUMP_IF_FALSE, futre});    
 
+        /// TODO:
     }
 
     void compiler::disassemble_expr(const TwoPy::Frontend::ExprNode& expr) {
@@ -82,8 +83,6 @@ namespace TwoPy::Backend {
         if (auto* ops = std::get_if<TwoPy::Frontend::OperatorsType>(&expr.node)) {
             disassemble_operators(*ops);
         }
-
-        /// TODO:
     }
 
     void compiler::disassemble_operators(const TwoPy::Frontend::OperatorsType& ops) {
