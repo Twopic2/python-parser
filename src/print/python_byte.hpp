@@ -30,10 +30,8 @@ namespace BytePrinter {
             case OpCode::CALL_FUNCTION: return "CALL_FUNCTION";
             case OpCode::PUSH_NULL: return "PUSH_NULL";
             case OpCode::BINARY_POWER: return "BINARY_POWER";
-            case OpCode::STORE_VARIABLE: return "STORE_VARIABLE";
             case OpCode::STORE_FAST: return "STORE_FAST";
             case OpCode::STORE_NAME: return "STORE_NAME";
-            case OpCode::LOAD_VARIABLE: return "LOAD_VARIABLE";
             case OpCode::LOAD_FAST: return "LOAD_FAST";
             case OpCode::LOAD_NAME: return "LOAD_NAME";
             case OpCode::LOAD_CONSTANT: return "LOAD_CONSTANT";
@@ -83,8 +81,6 @@ namespace BytePrinter {
                 }
                 break;
 
-            case OpCode::STORE_VARIABLE:
-            case OpCode::LOAD_VARIABLE:
             case OpCode::STORE_FAST:
             case OpCode::LOAD_FAST:
             case OpCode::LOAD_NAME:

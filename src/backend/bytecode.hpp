@@ -34,7 +34,6 @@ namespace TwoPy::Backend {
         PUSH_NULL,		// Prepares the stack for a function call.
         BINARY_POWER,
 
-        STORE_VARIABLE,
         STORE_FAST, // Local vars
         STORE_NAME, // Stuff like Classes, Functions, Dicts, Lists, etc etc
 
@@ -42,7 +41,6 @@ namespace TwoPy::Backend {
 
         POP_JUMP_IF_FALSE,
 
-        LOAD_VARIABLE,
         LOAD_FAST,  // Local vars
         LOAD_NAME,  // Module-level (mirrors STORE_NAME)
         LOAD_CONSTANT,

@@ -104,7 +104,7 @@ namespace TwoPy::Backend {
                         var_index = global_vars.at(ident->token.value);
                     }
 
-                    m_curr_chunk->code.push_back({OpCode::STORE_VARIABLE, var_index});
+                    m_curr_chunk->code.push_back({OpCode::STORE_NAME, var_index});
                     m_curr_chunk->byte_offset += 2;
                 }
             }
@@ -226,6 +226,7 @@ namespace TwoPy::Backend {
         } else {
             var_index = global_vars.at(function.token.value);
         }
+        
         m_curr_chunk->code.push_back({OpCode::STORE_NAME, var_index});
         m_curr_chunk->byte_offset += 2;
 

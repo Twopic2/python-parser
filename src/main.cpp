@@ -32,11 +32,11 @@ int main(int argc, char* argv[]) {
 
         BytePrinter::disassemble_program(bytecode_program);
 
-        fmt::print("\n=== ABSTRACT SYNTAX TREE ===\n");
+        // fmt::print("\n=== ABSTRACT SYNTAX TREE ===\n");
 
-        AstPrinter::print_ast(program);
+        // AstPrinter::print_ast(program);
 
-        fmt::print("\n=== PARSING COMPLETE ===\n"); 
+        // fmt::print("\n=== PARSING COMPLETE ===\n"); 
     
     } catch (const std::exception& e) {
         fmt::print(stderr, "Error: {}\n", e.what());
