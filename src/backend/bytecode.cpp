@@ -61,8 +61,7 @@ namespace TwoPy::Backend {
     }
 
     void compiler::disassemble_if_stmt(const TwoPy::Frontend::IfStmt& stmt) {
-        auto* ident = std::get_if<TwoPy::Frontend::Identifier>(&stmt.condition->node);
-        disassemble_identifier_expr(*ident);
+        disassemble_expr(*stmt.condition);
 
         auto jmp = emit_jump(OpCode::POP_JUMP_IF_FALSE);
         disassemble_body_stmt(stmt.body);
