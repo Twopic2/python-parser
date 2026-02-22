@@ -32,6 +32,8 @@ namespace BytePrinter {
             case OpCode::BINARY_POWER: return "BINARY_POWER";
             case OpCode::STORE_FAST: return "STORE_FAST";
             case OpCode::STORE_NAME: return "STORE_NAME";
+            case OpCode::COMPARE_OP: return "COMPARE_OP";
+            case OpCode::POP_JUMP_IF_FALSE: return "POP_JUMP_IF_FALSE";
             case OpCode::LOAD_FAST: return "LOAD_FAST";
             case OpCode::LOAD_NAME: return "LOAD_NAME";
             case OpCode::LOAD_CONSTANT: return "LOAD_CONSTANT";
@@ -92,6 +94,10 @@ namespace BytePrinter {
                 } else {
                     fmt::print(" {:>3}  <invalid variable index>", instr.argument);
                 }
+                break;
+
+            case OpCode::POP_JUMP_IF_FALSE:
+                fmt::print(" {:>3}  (to {})", (offset + 1) * 2, instr.argument);
                 break;
 
             case OpCode::CALL_FUNCTION:

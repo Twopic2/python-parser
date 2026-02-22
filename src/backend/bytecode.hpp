@@ -76,8 +76,40 @@ namespace TwoPy::Backend {
 
         ByteCodeProgram m_bytecode_program {};     
 
-        void disassemble_instruction(const TwoPy::Frontend::StmtPtr& stmt);
+        // helper functions by ci 
+        std::size_t emit_jump(OpCode instruction) {
+            m_curr_chunk->code.push_back({instruction, 0});
+            m_curr_chunk->byte_offset += 2;
+            return m_curr_chunk->byte_offset;
+        }
 
+        void patch_jump(std::size_t offset) {
+            std::size_t jump_instr_index = (offset - 2) / 2;
+            m_curr_chunk->code[jump_instr_index].argument =
+                static_cast<std::uint8_t>(m_curr_chunk->byte_offset);
+        }       
+
+        void emit_return_none() {
+            auto it = std::ranges::find_if(m_curr_chunk->consts_pool, [](const Value& v) {
+                return std::get_if<std::monostate>(&v.data()) != nullptr;
+            });
+
+            std::uint8_t none_index;
+            if (it != m_curr_chunk->consts_pool.end()) {
+                none_index = static_cast<std::uint8_t>(std::distance(m_curr_chunk->consts_pool.begin(), it));
+            } else {
+                none_index = static_cast<std::uint8_t>(m_curr_chunk->consts_pool.size());
+                m_curr_chunk->consts_pool.emplace_back();
+            }
+
+            m_curr_chunk->code.push_back({OpCode::LOAD_CONSTANT, none_index});
+            m_curr_chunk->byte_offset += 2;
+            m_curr_chunk->code.push_back({OpCode::RETURN});
+            m_curr_chunk->byte_offset += 2;
+        }
+
+
+        void disassemble_instruction(const TwoPy::Frontend::StmtPtr& stmt);
         void disassemble_stmt(const TwoPy::Frontend::StmtNode& stmt);
         void disassemble_expr(const TwoPy::Frontend::ExprNode& expr);
 
@@ -88,6 +120,12 @@ namespace TwoPy::Backend {
         void disassemble_callexpr_object(const TwoPy::Frontend::CallExpr& callee);
 
         void disassemble_if_stmt(const TwoPy::Frontend::IfStmt& stmt);
+        void disassemble_body_stmt(const TwoPy::Frontend::Block& blk);
+        // pushing data to the stack
+        void disassemble_identifier_expr(const TwoPy::Frontend::Identifier& iden);
+        // popping data to the stack
+        void disassemble_identifier_assignment_expr(const TwoPy::Frontend::Identifier& iden); 
+
 
     public:
         compiler(const TwoPy::Frontend::Program& program);

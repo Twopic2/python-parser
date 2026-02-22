@@ -22,8 +22,7 @@ namespace TwoPy::Backend {
             disassemble_instruction(ptr);
         }
 
-        m_bytecode_program.chunks.at(0)->code.push_back({OpCode::RETURN});
-        m_curr_chunk->byte_offset += 2;
+        emit_return_none();
         return m_bytecode_program;
     }
 
@@ -53,20 +52,21 @@ namespace TwoPy::Backend {
         }
     }
 
+    void compiler::disassemble_body_stmt(const TwoPy::Frontend::Block& blk) {
+        for (const auto& s : blk.statements) {
+            disassemble_instruction(s);
+        }
+        
+        emit_return_none();
+    }
+
     void compiler::disassemble_if_stmt(const TwoPy::Frontend::IfStmt& stmt) {
         auto* ident = std::get_if<TwoPy::Frontend::Identifier>(&stmt.condition->node);
-        std::string if_name = ident->token.value;
-        
-        if (global_vars.contains(if_name)) {
-            std::uint8_t var_index = global_vars.at(if_name);
-            m_curr_chunk->code.push_back({OpCode::LOAD_NAME, var_index});
-            m_curr_chunk->byte_offset += 2;
-        } 
+        disassemble_identifier_expr(*ident);
 
-        std::uint8_t futre = static_cast<std::uint8_t>(m_curr_chunk->byte_offset + 2);
-        m_curr_chunk->code.push_back({OpCode::POP_JUMP_IF_FALSE, futre});    
-
-        /// TODO:
+        auto jmp = emit_jump(OpCode::POP_JUMP_IF_FALSE);
+        disassemble_body_stmt(stmt.body);
+        patch_jump(jmp);
     }
 
     void compiler::disassemble_expr(const TwoPy::Frontend::ExprNode& expr) {
@@ -83,6 +83,42 @@ namespace TwoPy::Backend {
         if (auto* ops = std::get_if<TwoPy::Frontend::OperatorsType>(&expr.node)) {
             disassemble_operators(*ops);
         }
+
+        if (auto* ident = std::get_if<TwoPy::Frontend::Identifier>(&expr.node)) {
+            disassemble_identifier_expr(*ident);
+        }
+    }
+
+    void compiler::disassemble_identifier_expr(const TwoPy::Frontend::Identifier& iden) {
+        std::uint8_t var_index;
+
+        if (!global_vars.contains(iden.token.value)) {
+            m_curr_chunk->names_pool.push_back(iden.token.value);
+            var_index = static_cast<std::uint8_t>(m_curr_chunk->names_pool.size() - 1);
+            global_vars.insert({iden.token.value, var_index});
+        } else {
+            /// NOTE: .at() throws if it doesn't find the data
+            var_index = global_vars.at(iden.token.value);
+        }
+
+        m_curr_chunk->code.push_back({OpCode::LOAD_NAME, var_index});
+        m_curr_chunk->byte_offset += 2;
+    }
+
+    void compiler::disassemble_identifier_assignment_expr(const TwoPy::Frontend::Identifier& iden) {
+        std::uint8_t var_index;
+
+        if (!global_vars.contains(iden.token.value)) {
+            m_curr_chunk->names_pool.push_back(iden.token.value);
+            var_index = static_cast<std::uint8_t>(m_curr_chunk->names_pool.size() - 1);
+            global_vars.insert({iden.token.value, var_index});
+        } else {
+            /// NOTE: .at() throws if it doesn't find the data
+            var_index = global_vars.at(iden.token.value);
+        }
+        
+        m_curr_chunk->code.push_back({OpCode::STORE_NAME, var_index});
+        m_curr_chunk->byte_offset += 2;  
     }
 
     void compiler::disassemble_operators(const TwoPy::Frontend::OperatorsType& ops) {
@@ -93,19 +129,7 @@ namespace TwoPy::Backend {
 
             if (assign->target) {
                 if (auto* ident = std::get_if<TwoPy::Frontend::Identifier>(&assign->target->node)) {
-                    std::uint8_t var_index;
-
-                    if (!global_vars.contains(ident->token.value)) {
-                        m_curr_chunk->names_pool.push_back(ident->token.value);
-                        var_index = static_cast<std::uint8_t>(m_curr_chunk->names_pool.size() - 1);
-                        global_vars.insert({ident->token.value, var_index});
-                    } else {
-                         /// NOTE: .at() throws if it doesn't find the data
-                        var_index = global_vars.at(ident->token.value);
-                    }
-
-                    m_curr_chunk->code.push_back({OpCode::STORE_NAME, var_index});
-                    m_curr_chunk->byte_offset += 2;
+                    disassemble_identifier_assignment_expr(*ident);
                 }
             }
         }
@@ -235,18 +259,7 @@ namespace TwoPy::Backend {
 
     void compiler::disassemble_callexpr_object(const TwoPy::Frontend::CallExpr& callee) {
         auto* ident = std::get_if<TwoPy::Frontend::Identifier>(&callee.callee->node);
-        std::string func_name = ident->token.value;
-
-        if (global_vars.contains(func_name)) {
-            std::uint8_t var_index = global_vars.at(func_name);
-            m_curr_chunk->code.push_back({OpCode::LOAD_NAME, var_index});
-            m_curr_chunk->byte_offset += 2;
-        } else {
-            m_curr_chunk->names_pool.push_back(func_name);
-            std::uint8_t var_index = static_cast<std::uint8_t>(m_curr_chunk->names_pool.size() - 1);
-            m_curr_chunk->code.push_back({OpCode::LOAD_NAME, var_index});
-            m_curr_chunk->byte_offset += 2;
-        }
+        disassemble_identifier_expr(*ident);
 
         for (const auto& arg : callee.arguments) {
             disassemble_expr(*arg);

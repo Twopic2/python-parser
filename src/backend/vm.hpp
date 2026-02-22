@@ -21,8 +21,8 @@ namespace TwoPy::Backend {
         struct ValueStack {
             std::uint8_t m_caller_ret_ip;
 
-            int m_callee_sbp;
-            int m_caller_sbp; 
+            std::size_t m_callee_fp;
+            std::size_t m_caller_fp; 
         };
 
     public:
