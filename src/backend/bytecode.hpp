@@ -102,8 +102,12 @@ namespace TwoPy::Backend {
                 m_curr_chunk->consts_pool.emplace_back();
             }
 
+            m_curr_chunk->code.push_back({OpCode::POP});
+            m_curr_chunk->byte_offset += 2;
+
             m_curr_chunk->code.push_back({OpCode::LOAD_CONSTANT, none_index});
             m_curr_chunk->byte_offset += 2;
+
             m_curr_chunk->code.push_back({OpCode::RETURN});
             m_curr_chunk->byte_offset += 2;
         }
