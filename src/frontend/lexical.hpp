@@ -18,10 +18,11 @@ namespace TwoPy::Frontend {
     std::string read_file(std::string_view filename);
     class lexical_class {
         private:
-            std::size_t m_position {};
             std::string m_source {};
             std::size_t m_line {};
             std::size_t m_column {};
+            const char* m_curr_pos {};
+            const char* m_end {};
 
             std::unordered_map<std::string, token_type> predefined_keyword {};
             std::vector<std::size_t> indent {};

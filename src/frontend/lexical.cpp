@@ -7,8 +7,9 @@
 
 namespace TwoPy::Frontend {
 
-lexical_class::lexical_class(const std::string& source) : m_position(0), m_source(source), m_line(1), m_column(1) {
-    indent.emplace_back(0);  
+lexical_class::lexical_class(const std::string& source)
+    : m_source(source), m_curr_pos(m_source.data()), m_end(m_source.data() + m_source.size()), m_line(1), m_column(1) {
+    indent.emplace_back(0);
 
     predefined_keyword = {
         {"if", token_type::KEYWORD_IF},
@@ -54,8 +55,8 @@ lexical_class::lexical_class(const std::string& source) : m_position(0), m_sourc
     };
 }
 
-/* 
-Creating an object in place such as literals use emplace back. If the type is trivial no difference between the two. 
+/*
+Creating an object in place such as literals use emplace back. If the type is trivial no difference between the two.
 */
 
 std::string read_file(std::string_view filename) {
@@ -71,16 +72,16 @@ std::string read_file(std::string_view filename) {
 
 void lexical_class::handle_indentation(std::vector<token_class>& tokens, std::size_t start_line) {
     std::size_t spaces = 0;
-    while (m_position < m_source.length() && (m_source[m_position] == ' ' || m_source[m_position] == '\t')) {
-        if (m_source[m_position] == '\t') {
-            spaces += 4;  
+    while (m_curr_pos < m_end && (*m_curr_pos == ' ' || *m_curr_pos == '\t')) {
+        if (*m_curr_pos == '\t') {
+            spaces += 4;
         } else {
             spaces++;
         }
         next_token();
     }
 
-    if (m_position >= m_source.length() || m_source[m_position] == '\n') {
+    if (m_curr_pos >= m_end || *m_curr_pos == '\n') {
         return;
     }
 
@@ -102,36 +103,25 @@ void lexical_class::handle_indentation(std::vector<token_class>& tokens, std::si
 }
 
 bool lexical_class::is_whitespace() const {
-    if (m_position >= m_source.length()) {
-        return false;
-    }
-
-    char c = m_source[m_position];
-    return c == ' ' || c == '\t'|| c == '\r';
+    if (m_curr_pos >= m_end) return false;
+    char c = *m_curr_pos;
+    return c == ' ' || c == '\t' || c == '\r';
 }
 
 bool lexical_class::is_string() const {
-    if (m_position >= m_source.length()) {
-        return false;
-    }
-
-    char c = m_source[m_position];
+    if (m_curr_pos >= m_end) return false;
+    char c = *m_curr_pos;
     return c == '"' || c == '\'';
 }
 
 bool lexical_class::is_float() const {
-    if (m_position >= m_source.length()) {
-        return false;
-    }
+    if (m_curr_pos >= m_end) return false;
 
-    std::size_t temp_pos { m_position };
+    const char* temp = m_curr_pos;
+    while (temp < m_end && std::isdigit(*temp)) ++temp;
 
-    while (temp_pos < m_source.length() && std::isdigit(m_source[temp_pos])) {
-        temp_pos++;
-    }
-
-    if (temp_pos < m_source.length() && m_source[temp_pos] == '.') {
-        if (temp_pos + 1 < m_source.length() && std::isdigit(m_source[temp_pos + 1])) {
+    if (temp < m_end && *temp == '.') {
+        if (temp + 1 < m_end && std::isdigit(*(temp + 1))) {
             return true;
         }
     }
@@ -140,48 +130,38 @@ bool lexical_class::is_float() const {
 }
 
 bool lexical_class::is_integer() const {
-    if (m_position >= m_source.length()) {
-        return false;
-    }
-    
-    if (std::isdigit(m_source[m_position])) {
-        return true;
-    } else {
-        return false;
-    }
+    if (m_curr_pos >= m_end) return false;
+    return std::isdigit(*m_curr_pos);
 }
 
 bool lexical_class::is_identifier() const {
-     if (m_position >= m_source.length()) {
-        return false;
-    }
-
-    char c = m_source[m_position];
+    if (m_curr_pos >= m_end) return false;
+    char c = *m_curr_pos;
     return std::isalpha(c) || c == '_';
 }
 
 void lexical_class::next_token() {
-    if (m_position < m_source.length()) {
-        if (m_source[m_position] == '\n') {
+    if (m_curr_pos < m_end) {
+        if (*m_curr_pos == '\n') {
             m_line++;
             m_column = 0;
         } else {
             m_column++;
         }
-        m_position++;
+        ++m_curr_pos;
     }
 }
 
 std::vector<token_class> lexical_class::tokenize() {
     std::vector<token_class> tokens;
 
-    bool at_line_start = true;  
+    bool at_line_start = true;
 
-    while (m_position < m_source.length()) {
+    while (m_curr_pos < m_end) {
         std::size_t start_line = m_line;
         std::size_t start_column = m_column;
 
-        if (at_line_start && m_source[m_position] != '\n') {
+        if (at_line_start && *m_curr_pos != '\n') {
             handle_indentation(tokens, start_line);
             at_line_start = false;
             continue;
@@ -192,77 +172,61 @@ std::vector<token_class> lexical_class::tokenize() {
             continue;
         }
 
-        if (m_source[m_position] == '\n') {
+        if (*m_curr_pos == '\n') {
             tokens.push_back({token_type::NEWLINE, "\n", start_line, start_column});
             next_token();
-            at_line_start = true;  
+            at_line_start = true;
             continue;
         }
 
         if (is_float()) {
-            std::size_t start = m_position;
+            const char* start = m_curr_pos;
 
-            while (m_position < m_source.length() && std::isdigit(m_source[m_position])) {
-                next_token();
-            }
-            
-            if (m_position < m_source.length() && m_source[m_position] == '.') {
-                next_token();
-            }
+            while (m_curr_pos < m_end && std::isdigit(*m_curr_pos)) next_token();
+            if (m_curr_pos < m_end && *m_curr_pos == '.') next_token();
+            while (m_curr_pos < m_end && std::isdigit(*m_curr_pos)) next_token();
 
-            while (m_position < m_source.length() && std::isdigit(m_source[m_position])) {
-                next_token();
-            }
-
-            std::string num(m_source.substr(start, m_position - start));
-            tokens.push_back({token_type::FLOAT_LITERAL, num, start_line, start_column});
+            tokens.push_back({token_type::FLOAT_LITERAL, std::string(start, m_curr_pos - start), start_line, start_column});
             continue;
-        }        
+        }
 
         if (is_integer()) {
-            std::size_t start = m_position;
-            while (m_position < m_source.length() && std::isdigit(m_source[m_position])) {
-                next_token();
-            }
+            const char* start = m_curr_pos;
+            while (m_curr_pos < m_end && std::isdigit(*m_curr_pos)) next_token();
 
-            std::string num(m_source.substr(start, m_position - start));
-            tokens.push_back({token_type::INTEGER_LITERAL, num, start_line, start_column});
+            tokens.push_back({token_type::INTEGER_LITERAL, std::string(start, m_curr_pos - start), start_line, start_column});
             continue;
         }
 
         if (is_string()) {
-            char quote = m_source[m_position];
-            next_token(); 
-            std::size_t start = m_position;
+            char quote = *m_curr_pos;
+            next_token();
+            const char* start = m_curr_pos;
 
-            while (m_position < m_source.length() && m_source[m_position] != quote) {
-                if (m_source[m_position] == '\\') {
-                    next_token(); 
-                    if (m_position < m_source.length()) {
-                        next_token(); 
-                    }
+            while (m_curr_pos < m_end && *m_curr_pos != quote) {
+                if (*m_curr_pos == '\\') {
+                    next_token();
+                    if (m_curr_pos < m_end) next_token();
                 } else {
                     next_token();
                 }
             }
 
-            std::string str(m_source.substr(start, m_position - start));
-            if (m_position < m_source.length()) {
-                next_token(); 
-            }
+            std::string str(start, m_curr_pos - start);
+            if (m_curr_pos < m_end) next_token();
 
             tokens.push_back({token_type::STRING_LITERAL, str, start_line, start_column});
             continue;
         }
 
         if (is_identifier()) {
-            std::size_t start = m_position;
+            const char* start = m_curr_pos;
 
-            while (m_position < m_source.length() && (std::isalnum(m_source[m_position]) || m_source[m_position] == '_')) {
+            while (m_curr_pos < m_end && (std::isalnum(*m_curr_pos) || *m_curr_pos == '_')) {
                 next_token();
             }
 
-            std::string identifier(m_source.substr(start, m_position - start));
+            std::string identifier(start, m_curr_pos - start);
 
             auto it = predefined_keyword.find(identifier);
             if (it == predefined_keyword.end()) {
@@ -273,141 +237,90 @@ std::vector<token_class> lexical_class::tokenize() {
             continue;
         }
 
-        if (m_position + 2 < m_source.length()) {
-            std::string three_char = std::string(m_source.substr(m_position, 3));
-            if (three_char == "...") {
-                tokens.push_back({token_type::ELLIPSIS, three_char, start_line, start_column});
-                m_position += 3;
-                m_column += 3;
-                continue;
-            } else if (three_char == "//=") {
-                tokens.push_back({token_type::DOUBLE_SLASH_EQUAL, three_char, start_line, start_column});
-                m_position += 3;
-                m_column += 3;
-                continue;
-            } else if (three_char == "**=") {
-                tokens.push_back({token_type::POWER_EQUAL, three_char, start_line, start_column});
-                m_position += 3;
-                m_column += 3;
-                continue;
-            } else if (three_char == "<<=") {
-                tokens.push_back({token_type::LEFT_SHIFT_EQUAL, three_char, start_line, start_column});
-                m_position += 3;
-                m_column += 3;
-                continue;
-            } else if (three_char == ">>=") {
-                tokens.push_back({token_type::RIGHT_SHIFT_EQUAL, three_char, start_line, start_column});
-                m_position += 3;
-                m_column += 3;
-                continue;
+        if (m_curr_pos + 2 < m_end) {
+            if (m_curr_pos[0] == '.' && m_curr_pos[1] == '.' && m_curr_pos[2] == '.') {
+                tokens.push_back({token_type::ELLIPSIS, "...", start_line, start_column});
+                m_curr_pos += 3; m_column += 3; continue;
+            } else if (m_curr_pos[0] == '/' && m_curr_pos[1] == '/' && m_curr_pos[2] == '=') {
+                tokens.push_back({token_type::DOUBLE_SLASH_EQUAL, "//=", start_line, start_column});
+                m_curr_pos += 3; m_column += 3; continue;
+            } else if (m_curr_pos[0] == '*' && m_curr_pos[1] == '*' && m_curr_pos[2] == '=') {
+                tokens.push_back({token_type::POWER_EQUAL, "**=", start_line, start_column});
+                m_curr_pos += 3; m_column += 3; continue;
+            } else if (m_curr_pos[0] == '<' && m_curr_pos[1] == '<' && m_curr_pos[2] == '=') {
+                tokens.push_back({token_type::LEFT_SHIFT_EQUAL, "<<=", start_line, start_column});
+                m_curr_pos += 3; m_column += 3; continue;
+            } else if (m_curr_pos[0] == '>' && m_curr_pos[1] == '>' && m_curr_pos[2] == '=') {
+                tokens.push_back({token_type::RIGHT_SHIFT_EQUAL, ">>=", start_line, start_column});
+                m_curr_pos += 3; m_column += 3; continue;
             }
         }
 
-        if (m_position + 1 < m_source.length()) {
-            std::string two_char = std::string(m_source.substr(m_position, 2));
-
-            if (two_char == "//") {
-                tokens.push_back({token_type::DOUBLE_SLASH, two_char, start_line, start_column});
-                m_position += 2;
-                m_column += 2;
-                continue;
-            } else if (two_char == "**") {
-                tokens.push_back({token_type::POWER, two_char, start_line, start_column});
-                m_position += 2;
-                m_column += 2;
-                continue;
-            } else if (two_char == "<=") {
-                tokens.push_back({token_type::LESS_EQUAL, two_char, start_line, start_column});
-                m_position += 2;
-                m_column += 2;
-                continue;
-            } else if (two_char == ">=") {
-                tokens.push_back({token_type::GREATER_EQUAL, two_char, start_line, start_column});
-                m_position += 2;
-                m_column += 2;
-                continue;
-            } else if (two_char == "==") {
-                tokens.push_back({token_type::DOUBLE_EQUAL, two_char, start_line, start_column});
-                m_position += 2;
-                m_column += 2;
-                continue;
-            } else if (two_char == "!=") {
-                tokens.push_back({token_type::NOT_EQUAL, two_char, start_line, start_column});
-                m_position += 2;
-                m_column += 2;
-                continue;
-            } else if (two_char == "+=") {
-                tokens.push_back({token_type::PLUS_EQUAL, two_char, start_line, start_column});
-                m_position += 2;
-                m_column += 2;
-                continue;
-            } else if (two_char == "-=") {
-                tokens.push_back({token_type::MINUS_EQUAL, two_char, start_line, start_column});
-                m_position += 2;
-                m_column += 2;
-                continue;
-            } else if (two_char == "*=") {
-                tokens.push_back({token_type::STAR_EQUAL, two_char, start_line, start_column});
-                m_position += 2;
-                m_column += 2;
-                continue;
-            } else if (two_char == "/=") {
-                tokens.push_back({token_type::SLASH_EQUAL, two_char, start_line, start_column});
-                m_position += 2;
-                m_column += 2;
-                continue;
-            } else if (two_char == "%=") {
-                tokens.push_back({token_type::PERCENT_EQUAL, two_char, start_line, start_column});
-                m_position += 2;
-                m_column += 2;
-                continue;
-            } else if (two_char == "@=") {
-                tokens.push_back({token_type::AT_EQUAL, two_char, start_line, start_column});
-                m_position += 2;
-                m_column += 2;
-                continue;
-            } else if (two_char == "&=") {
-                tokens.push_back({token_type::AMPERSAND_EQUAL, two_char, start_line, start_column});
-                m_position += 2;
-                m_column += 2;
-                continue;
-            } else if (two_char == "|=") {
-                tokens.push_back({token_type::PIPE_EQUAL, two_char, start_line, start_column});
-                m_position += 2;
-                m_column += 2;
-                continue;
-            } else if (two_char == "^=") {
-                tokens.push_back({token_type::CARET_EQUAL, two_char, start_line, start_column});
-                m_position += 2;
-                m_column += 2;
-                continue;
-            } else if (two_char == ":=") {
-                tokens.push_back({token_type::WALRUS, two_char, start_line, start_column});
-                m_position += 2;
-                m_column += 2;
-                continue;
-            } else if (two_char == "->") {
-                tokens.push_back({token_type::ARROW, two_char, start_line, start_column});
-                m_position += 2;
-                m_column += 2;
-                continue;
-            } else if (two_char == "<<") {
-                tokens.push_back({token_type::LEFT_SHIFT, two_char, start_line, start_column});
-                m_position += 2;
-                m_column += 2;
-                continue;
-            } else if (two_char == ">>") {
-                tokens.push_back({token_type::RIGHT_SHIFT, two_char, start_line, start_column});
-                m_position += 2;
-                m_column += 2;
-                continue;
+        if (m_curr_pos + 1 < m_end) {
+            if (m_curr_pos[0] == '/' && m_curr_pos[1] == '/') {
+                tokens.push_back({token_type::DOUBLE_SLASH, "//", start_line, start_column});
+                m_curr_pos += 2; m_column += 2; continue;
+            } else if (m_curr_pos[0] == '*' && m_curr_pos[1] == '*') {
+                tokens.push_back({token_type::POWER, "**", start_line, start_column});
+                m_curr_pos += 2; m_column += 2; continue;
+            } else if (m_curr_pos[0] == '<' && m_curr_pos[1] == '=') {
+                tokens.push_back({token_type::LESS_EQUAL, "<=", start_line, start_column});
+                m_curr_pos += 2; m_column += 2; continue;
+            } else if (m_curr_pos[0] == '>' && m_curr_pos[1] == '=') {
+                tokens.push_back({token_type::GREATER_EQUAL, ">=", start_line, start_column});
+                m_curr_pos += 2; m_column += 2; continue;
+            } else if (m_curr_pos[0] == '=' && m_curr_pos[1] == '=') {
+                tokens.push_back({token_type::DOUBLE_EQUAL, "==", start_line, start_column});
+                m_curr_pos += 2; m_column += 2; continue;
+            } else if (m_curr_pos[0] == '!' && m_curr_pos[1] == '=') {
+                tokens.push_back({token_type::NOT_EQUAL, "!=", start_line, start_column});
+                m_curr_pos += 2; m_column += 2; continue;
+            } else if (m_curr_pos[0] == '+' && m_curr_pos[1] == '=') {
+                tokens.push_back({token_type::PLUS_EQUAL, "+=", start_line, start_column});
+                m_curr_pos += 2; m_column += 2; continue;
+            } else if (m_curr_pos[0] == '-' && m_curr_pos[1] == '=') {
+                tokens.push_back({token_type::MINUS_EQUAL, "-=", start_line, start_column});
+                m_curr_pos += 2; m_column += 2; continue;
+            } else if (m_curr_pos[0] == '*' && m_curr_pos[1] == '=') {
+                tokens.push_back({token_type::STAR_EQUAL, "*=", start_line, start_column});
+                m_curr_pos += 2; m_column += 2; continue;
+            } else if (m_curr_pos[0] == '/' && m_curr_pos[1] == '=') {
+                tokens.push_back({token_type::SLASH_EQUAL, "/=", start_line, start_column});
+                m_curr_pos += 2; m_column += 2; continue;
+            } else if (m_curr_pos[0] == '%' && m_curr_pos[1] == '=') {
+                tokens.push_back({token_type::PERCENT_EQUAL, "%=", start_line, start_column});
+                m_curr_pos += 2; m_column += 2; continue;
+            } else if (m_curr_pos[0] == '@' && m_curr_pos[1] == '=') {
+                tokens.push_back({token_type::AT_EQUAL, "@=", start_line, start_column});
+                m_curr_pos += 2; m_column += 2; continue;
+            } else if (m_curr_pos[0] == '&' && m_curr_pos[1] == '=') {
+                tokens.push_back({token_type::AMPERSAND_EQUAL, "&=", start_line, start_column});
+                m_curr_pos += 2; m_column += 2; continue;
+            } else if (m_curr_pos[0] == '|' && m_curr_pos[1] == '=') {
+                tokens.push_back({token_type::PIPE_EQUAL, "|=", start_line, start_column});
+                m_curr_pos += 2; m_column += 2; continue;
+            } else if (m_curr_pos[0] == '^' && m_curr_pos[1] == '=') {
+                tokens.push_back({token_type::CARET_EQUAL, "^=", start_line, start_column});
+                m_curr_pos += 2; m_column += 2; continue;
+            } else if (m_curr_pos[0] == ':' && m_curr_pos[1] == '=') {
+                tokens.push_back({token_type::WALRUS, ":=", start_line, start_column});
+                m_curr_pos += 2; m_column += 2; continue;
+            } else if (m_curr_pos[0] == '-' && m_curr_pos[1] == '>') {
+                tokens.push_back({token_type::ARROW, "->", start_line, start_column});
+                m_curr_pos += 2; m_column += 2; continue;
+            } else if (m_curr_pos[0] == '<' && m_curr_pos[1] == '<') {
+                tokens.push_back({token_type::LEFT_SHIFT, "<<", start_line, start_column});
+                m_curr_pos += 2; m_column += 2; continue;
+            } else if (m_curr_pos[0] == '>' && m_curr_pos[1] == '>') {
+                tokens.push_back({token_type::RIGHT_SHIFT, ">>", start_line, start_column});
+                m_curr_pos += 2; m_column += 2; continue;
             }
         }
 
         token_type type;
         bool matched = true;
 
-        char current = m_source[m_position];
+        char current = *m_curr_pos;
         switch (current) {
             case '+': type = token_type::PLUS; break;
             case '-': type = token_type::MINUS; break;
@@ -436,7 +349,7 @@ std::vector<token_class> lexical_class::tokenize() {
                 matched = false;
                 break;
         }
-        
+
         if (matched) {
             tokens.push_back({type, std::string(1, current), start_line, start_column});
             next_token();
@@ -565,4 +478,4 @@ std::string lexical_class::token_type_name(const token_class& token) {
     }
 }
 
-} 
+}
