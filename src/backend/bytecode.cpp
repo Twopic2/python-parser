@@ -55,6 +55,7 @@ namespace TwoPy::Backend {
     void compiler::disassemble_body_stmt(const TwoPy::Frontend::Block& blk) {
         for (const auto& s : blk.statements) {
             disassemble_instruction(s);
+            m_curr_chunk->code.push_back({OpCode::POP});            
         }
         
         emit_return_none();

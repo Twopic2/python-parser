@@ -109,6 +109,10 @@ namespace TwoPy::Backend {
             m_curr_chunk->byte_offset += 2;
         }
 
+        void add_chunk_code(OpCode code, std::uint8_t arg = 0) {
+            m_curr_chunk->code.push_back({code, arg});            
+        }
+
         void disassemble_instruction(const TwoPy::Frontend::StmtPtr& stmt);
         void disassemble_stmt(const TwoPy::Frontend::StmtNode& stmt);
         void disassemble_expr(const TwoPy::Frontend::ExprNode& expr);
@@ -125,7 +129,8 @@ namespace TwoPy::Backend {
         void disassemble_identifier_expr(const TwoPy::Frontend::Identifier& iden);
         // popping data to the stack
         void disassemble_identifier_assignment_expr(const TwoPy::Frontend::Identifier& iden); 
-
+       /*  void disassemble_and_expr(const TwoPy::Frontend::AndOp& and);
+        void disassemble_or_expr(const TwoPy::Frontend::OrOp& or); */
 
     public:
         compiler(const TwoPy::Frontend::Program& program);
