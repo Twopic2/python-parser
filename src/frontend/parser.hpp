@@ -63,6 +63,24 @@ namespace TwoPy::Frontend {
 
             bool is_at_end();
 
+            // Helper functions
+            void consume_newline() {
+                consume(token_type::COLON);
+                consume(token_type::NEWLINE);
+                if (!match(token_type::INDENT)) {
+                    debug_syntax_error();
+                }
+                consume(token_type::INDENT);
+            }
+
+            void consume_line() {
+                consume(token_type::NEWLINE);
+                if (!match(token_type::INDENT)) {
+                    debug_syntax_error();
+                }
+                consume(token_type::INDENT);
+            }
+
             // Special thanks to DerkT for fixing up my code!
             template <typename ... TokenTypes>
             void consume(TokenTypes ... types) {
@@ -129,9 +147,6 @@ namespace TwoPy::Frontend {
             ExprPtr parse_logical_and();
 
             Block parse_block();
-
-            void consume_newline();
-            void consume_line();
 
         public:
             parser_class(lexical_class& lexer);

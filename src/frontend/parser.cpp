@@ -55,23 +55,6 @@ Program parser_class::parse() {
     return program;
 }
 
-void parser_class::consume_newline() {
-    consume(token_type::COLON);
-    consume(token_type::NEWLINE);
-    if (!match(token_type::INDENT)) {
-        debug_syntax_error();
-    }
-    consume(token_type::INDENT);
-}
-
-void parser_class::consume_line() {
-    consume(token_type::NEWLINE);
-    if (!match(token_type::INDENT)) {
-        debug_syntax_error();
-    }
-    consume(token_type::INDENT);
-}
-
 Block parser_class::parse_block() {
     Block block;
     block.token = current_token();
