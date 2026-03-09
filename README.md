@@ -23,7 +23,9 @@ Currently only got basic arthemetic working for the vm and load/store ops.
 
 The next test will be trying to get fizzbuzz working and fib. 
 
-### TODO
+<img width="623" height="108" alt="Screenshot_20260308_202950" src="https://github.com/user-attachments/assets/7cd395f6-c356-4c2b-8e58-f09fda33e2d2" />
+
+# TODO
 
 Tailtail call recursion bytecode
 
