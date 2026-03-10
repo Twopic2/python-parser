@@ -105,7 +105,10 @@ namespace TwoPy::Backend {
                     } else if (m_bp->names_pool[instr.argument] == "print") {
                         auto builtin = std::make_shared<FunctionPyObject>("print", std::vector<std::string>{}, 0);
                         vm_stack.push(Value(builtin));
+                    } else {
+                        throw std::runtime_error("Bruh ur var has no value");
                     }
+
                     break;
                 }
 
@@ -139,7 +142,7 @@ namespace TwoPy::Backend {
                     break;
             }
             } catch (const std::exception& e) {
-                throw std::runtime_error { fmt::format("lifetime error") };
+                fmt::print("Runtime error: {}\n", e.what());
             }
         }
         return Result::OK;
