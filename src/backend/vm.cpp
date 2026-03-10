@@ -93,18 +93,16 @@ namespace TwoPy::Backend {
                     auto name = vm_stack.top();
                     vm_stack.pop();
 
-                    std::string key = m_bp->names_pool[instr.argument];
-                    global_vars.insert_or_assign(key, name);
+                    global_vars.insert_or_assign(m_bp->names_pool[instr.argument], name);
                     break;
                 }
 
                 /* Pushes to stack */
                 case OpCode::LOAD_NAME: {
-                    std::string var_name = m_bp->names_pool[instr.argument];
-                    auto it = global_vars.find(var_name);
+                    auto it = global_vars.find(m_bp->names_pool[instr.argument]);
                     if (it != global_vars.end()) {
                         vm_stack.push(it->second);
-                    } else if (var_name == "print") {
+                    } else if (m_bp->names_pool[instr.argument] == "print") {
                         auto builtin = std::make_shared<FunctionPyObject>("print", std::vector<std::string>{}, 0);
                         vm_stack.push(Value(builtin));
                     }

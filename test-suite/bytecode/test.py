@@ -5,9 +5,9 @@ code = """
 x = 1
 y = 2
 
-z = x + y
 
-print(z)
+print(x)
+print(y)
 """
 
 dis.dis(code)

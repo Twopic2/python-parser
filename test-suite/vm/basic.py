@@ -4,3 +4,5 @@ y = 2
 z = x + y * 4 - 3
 
 print(z)
+print(x)
+print(y)
