@@ -87,21 +87,24 @@ namespace TwoPy::Backend {
                     break;
                 }
 
-                /* Pops from stack */
+                 /* Pops from stack */
                 case OpCode::STORE_NAME: {
                     auto name = vm_stack.top();
                     vm_stack.pop();
 
-                    global_vars.insert_or_assign(m_bp->names_pool[instr.argument], name);
+                    std::string key = m_bp->names_pool[instr.argument];
+                    global_vars.insert_or_assign(key, name);
                     break;
                 }
 
                 /* Pushes to stack */
                 case OpCode::LOAD_NAME: {
-                    auto it = global_vars.find(m_bp->names_pool[instr.argument]);
+                    std::string var_name = m_bp->names_pool[instr.argument];
+                    
+                    auto it = global_vars.find(var_name);
                     if (it != global_vars.end()) {
                         vm_stack.push(it->second);
-                    } else if (m_bp->names_pool[instr.argument] == "print") {
+                    } else if (var_name == "print") {
                         auto builtin = std::make_shared<FunctionPyObject>("print", std::vector<std::string>{}, 0);
                         vm_stack.push(Value(builtin));
                     } else {
@@ -109,7 +112,7 @@ namespace TwoPy::Backend {
                     }
 
                     break;
-                }
+                } 
 
                 case OpCode::CALL_FUNCTION: {
                     std::uint8_t arg_count = instr.argument;

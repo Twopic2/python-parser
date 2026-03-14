@@ -26,34 +26,35 @@
 
 namespace TwoPy::Backend {
     class VM {
-    public:
-        enum class Result : std::uint8_t {
-            OK,
-            RUNTIME_ERROR,
-            COMPILER_ERROR,
-        };
-    private:
-        const ByteCodeProgram& m_prgm {};
-        
-        std::size_t m_frame_count {};
-        
-        std::flat_map<std::string, Value> global_vars {};
-        std::flat_map<std::string, Value> local_vars {};
+        public:
+            enum class Result : std::uint8_t {
+                OK,
+                RUNTIME_ERROR,
+                COMPILER_ERROR,
+            };
+            
+        private:
+            const ByteCodeProgram& m_prgm {};
+            
+            std::size_t m_frame_count {};
+            
+            std::flat_map<std::string, Value> global_vars {};
+            std::flat_map<std::string, Value> local_vars {};
 
-        // stores runtime consts/values 
-        std::stack<Value> vm_stack {};
-        std::vector<Instruction> m_instrutions {};
+            // stores runtime consts/values 
+            std::stack<Value> vm_stack {};
+            std::vector<Instruction> m_instrutions {};
 
-        // Also called program counters 
-        std::size_t m_ip {};
+            // Also called program counters 
+            std::size_t m_ip {};
 
-        // Base Pointer (EBP)
-        Chunk* m_bp {};
+            // Base Pointer (EBP)
+            Chunk* m_bp {};
 
-    public:
-        VM(const ByteCodeProgram& prgm);        
+        public:
+            VM(const ByteCodeProgram& prgm);        
 
-        Result run();
+            Result run();
     };
 }
 
