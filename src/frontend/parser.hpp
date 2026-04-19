@@ -1,10 +1,8 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
-#include <utility>
 #include <string>
 #include <format>
-#include <iostream>
 #include <concepts>
 
 #include <fmt/core.h>
@@ -12,24 +10,7 @@
 #include "frontend/ast.hpp"
 #include "frontend/lexical.hpp"
 
-/* Basically anylisis the syntax of a group of phrases */
-
-/* Old notes sucks but its basically a top-down or LL parser*/
-
-
-/*
-Left-Associative example:
-a - b - c  ≡  (a - b) - c
-Expr → Term { op Term }
-
-Right-Associative example:
-a ** b ** c  ≡  a ** (b ** c)
-Expr → Base [ op Expr ]   (uses recursion, not loop)
-*/
-
-
 namespace TwoPy::Frontend {
-    /* I decided upon a recursive descent appoarch */
     class parser_class {
         private:
             /* Should make is a vector of bools */
