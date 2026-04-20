@@ -10,13 +10,26 @@
 #include "frontend/ast.hpp"
 #include "frontend/lexical.hpp"
 
+/* 
+In a Pratt (top-down operator precedence) parser, every token can have:
+
+a prefix rule → how it starts an expression
+an infix/postfix (left) rule → how it extends an expression that’s already been parsed
+
+Prefix rule example:
+List literal = [1, 2, 3]
+
+Postfix (left) rule example:
+Array indexing = a[i]
+*/
+
 namespace TwoPy::Frontend {
     class parser_class {
         private:
             /* Should make is a vector of bools */
             bool valid_constructor = false;
             
-            std::vector<token_class> tokens {};
+            std::vector<token_class> tokens;
             std::size_t current_pos {};
             std::size_t m_previous_pos {};
             
@@ -105,17 +118,15 @@ namespace TwoPy::Frontend {
             StmtPtr parse_continue();
             StmtPtr parse_method();
             StmtPtr parse_lambda();
-
             StmtPtr parse_expression_stmt(const auto& token);
 
             ExprPtr parse_list();
             ExprPtr parse_dict();
-
             ExprPtr parse_call_expr(ExprPtr callee);
             ExprPtr parse_constructor_call(ExprPtr constructor);
+            ExprPtr parse_list_index_call(ExprPtr list);
             ExprPtr parse_attribute_expr();
             ExprPtr parse_self();
-
             ExprPtr parse_term();
             ExprPtr parse_factor();
             ExprPtr parse_power();

@@ -17,6 +17,9 @@ for i in x:
     else:
         z
 
+for i in range(100):
+    print(i)
+
 while i:
     if i:
         break

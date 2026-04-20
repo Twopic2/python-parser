@@ -176,6 +176,17 @@ inline void print_expr_node(const Ast::ListExpr& node, int depth) {
     }
 }
 
+inline void print_expr_node(const Ast::ListIndexExpr& node, int depth) {
+    print_indent(depth);
+    fmt::print("ListIndexExpr\n");
+    print_indent(depth + 1);
+    fmt::print("list:\n");
+    print_expr(node.list_name, depth + 2);
+    print_indent(depth + 1);
+    fmt::print("index:\n");
+    print_expr(node.index, depth + 2);
+}
+
 inline void print_expr_node(const Ast::DictExpr& node, int depth) {
     print_indent(depth);
     fmt::print("DictExpr\n");
@@ -309,9 +320,11 @@ inline void print_stmt_node(const Ast::ForStmt& node, int depth) {
     fmt::print("ForStmt\n");
     print_indent(depth + 1);
     fmt::print("variable: {}\n", token_value(node.variable.token));
-    print_indent(depth + 1);
-    fmt::print("iterable:\n");
-    print_expr(node.iterable, depth + 2);
+    if (node.iterable) {
+        print_indent(depth + 1);
+        fmt::print("iterable:\n");
+        print_expr(*node.iterable, depth + 2);
+    }
     print_indent(depth + 1);
     fmt::print("body:\n");
     print_block(node.body, depth + 2);

@@ -1,12 +1,17 @@
+#include <memory>
 #include <stdexcept>
 #include <format>
 
 #include "frontend/parser.hpp"
+#include "frontend/ast.hpp"
+#include "frontend/token.hpp"
 
 namespace TwoPy::Frontend {
 
 /*
 Recursive descent order
+
+Top-Down or LL doesn't allow for left hand recursion
 
 parse_program()        - Top level
 parse_statement()      - Statement dispatcher
@@ -22,7 +27,7 @@ parse_power()          - Exponentiation
 parse_expression()     - Literals, identifier
 */
 
-parser_class::parser_class(lexical_class& lexer) : current_pos(0),  m_previous_pos(0) {
+parser_class::parser_class(lexical_class& lexer) {
     tokens = lexer.tokenize();
 }
 
@@ -125,6 +130,8 @@ ExprPtr parser_class::parse_expression_types() {
                 } else {
                     expr = parse_call_expr(std::move(id_expr));
                 }
+            } else if (match(token_type::LBRACKET)) {
+                expr = parse_list_index_call(std::move(id_expr));
             } else {
                 expr = std::move(id_expr);
             }
@@ -171,17 +178,30 @@ ExprPtr parser_class::parse_attribute_expr() {
     Identifier attr{current_token()};
     consume();
 
-    AttributeExpr attr_expr{current_token(), inst_var, attr};
+    AttributeExpr attr_expr{.token=current_token(), .constructor=inst_var, .attribute=attr};
     auto attr_node = std::make_unique<ExprNode>(ExprNode{std::move(attr_expr)});
     return attr_node;
+}
+
+/// NOTE: Right now just focus on getting single indexing working 
+ExprPtr parser_class::parse_list_index_call(ExprPtr list) {
+    token_class token = current_token();
+    consume(token_type::LBRACKET);
+
+    ListIndexExpr list_indexing {.token = token, .list_name = std::move(list), .index = parse_expression_types()};
+
+    consume();
+
+    auto index_node = std::make_unique<ExprNode>(ExprNode{std::move(list_indexing)});
+    
+    return index_node;
 }
 
 ExprPtr parser_class::parse_call_expr(ExprPtr callee) {
     token_class token = current_token();
     consume(token_type::LPAREN);
 
-    CallExpr call{token, std::move(callee), {}};
-
+    CallExpr call{.token=token, .callee=std::move(callee), .arguments={}};
     if (!match(token_type::RPAREN)) {
         call.arguments.push_back(parse_term());
 
@@ -205,7 +225,7 @@ ExprPtr parser_class::parse_constructor_call(ExprPtr constructor) {
     token_class token = current_token();
     consume(token_type::LPAREN);
 
-    ConstructorCallExpr con{token, std::move(constructor), {}};
+    ConstructorCallExpr con{.token=token, .constructor=std::move(constructor), .arguments={}};
 
     if (!match(token_type::RPAREN)) {
         con.arguments.push_back(parse_term());
@@ -233,7 +253,7 @@ ExprPtr parser_class::parse_comparator() {
         token_class op { current_token() };
         consume(current_token().type);
 
-        ComparisonOp comp{op, std::move(left), parse_comparator()};
+        ComparisonOp comp{.op=op, .left=std::move(left), .right=parse_comparator()};
         auto comp_node = std::make_unique<ExprNode>(ExprNode{std::move(comp)});
         return comp_node;
     }
@@ -248,7 +268,7 @@ ExprPtr parser_class::parse_term() {
         token_class op { current_token() };
         consume(current_token().type);
 
-        TermOp term{op, std::move(left), parse_factor()};
+        TermOp term{.op=op, .left=std::move(left), .right=parse_factor()};
         left = std::make_unique<ExprNode>(ExprNode{std::move(term)});
     }
 
@@ -262,7 +282,7 @@ ExprPtr parser_class::parse_equality() {
         token_class op { current_token() };
         consume();
 
-        EqualityOp eq{op, std::move(left), parse_comparator()};
+        EqualityOp eq{.op=op, .left=std::move(left), .right=parse_comparator()};
         left = std::make_unique<ExprNode>(ExprNode{std::move(eq)});
     }
 
@@ -276,7 +296,7 @@ ExprPtr parser_class::parse_factor() {
         token_class op { current_token() };
         consume();
 
-        FactorOp factor{op, std::move(left), parse_power()};
+        FactorOp factor{.op=op, .left=std::move(left), .right=parse_power()};
         left = std::make_unique<ExprNode>(ExprNode{std::move(factor)});
     }
 
@@ -290,7 +310,7 @@ ExprPtr parser_class::parse_power() {
         token_class op { current_token() };
         consume();
 
-        PowerOp power{op, std::move(base), parse_power()};
+        PowerOp power{.op=op, .base=std::move(base), .exponent=parse_power()};
         auto power_node = std::make_unique<ExprNode>(ExprNode{std::move(power)});
         return power_node;
     }
@@ -305,7 +325,7 @@ ExprPtr parser_class::parse_bitwise() {
         token_class op { current_token() };
         consume();
 
-        BitwiseOp bitwise{op, std::move(left), parse_term()};
+        BitwiseOp bitwise{.op=op, .left=std::move(left), .right=parse_term()};
         left = std::make_unique<ExprNode>(ExprNode{std::move(bitwise)});
     }
 
@@ -344,7 +364,7 @@ StmtPtr parser_class::parse_lambda() {
 
     consume(token_type::NEWLINE);
 
-    LambdaStmt lambda{token, std::move(params), std::move(body)};
+    LambdaStmt lambda{.token=token, .params=std::move(params), .body=std::move(body)};
     auto lambda_node = std::make_unique<StmtNode>(StmtNode{std::move(lambda)});
     return lambda_node;
 }
@@ -426,7 +446,7 @@ ExprPtr parser_class::parse_self() {
         consume();
     }
 
-    SelfExpr self{token, std::move(attr)};
+    SelfExpr self{.token=token, .attribute=std::move(attr)};
     auto self_node = std::make_unique<ExprNode>(ExprNode{std::move(self)});
     return self_node;
 }
@@ -471,7 +491,7 @@ StmtPtr parser_class::parse_try() {
         else_branch = std::make_unique<ElseStmt>(else_token, std::move(else_body));
     }
 
-    TryStmt try_stmt{token, std::move(try_body), std::move(except_branch), std::move(finally_branch), std::move(else_branch)};
+    TryStmt try_stmt{.token=token, .body=std::move(try_body), .except_branch=std::move(except_branch), .finally_branch=std::move(finally_branch), .else_branch=std::move(else_branch)};
     auto try_node = std::make_unique<StmtNode>(StmtNode{std::move(try_stmt)});
     return try_node;
 }
@@ -492,17 +512,19 @@ ExprPtr parser_class::parse_assignment() {
         token_class token = current_token();
         consume(token_type::EQUAL);
 
-        AssignmentOp assign{token, std::move(left), parse_assignment()};
+        AssignmentOp assign{.token=token, .target=std::move(left), .value=parse_assignment()};
         auto assign_node = std::make_unique<ExprNode>(ExprNode{std::move(assign)});
         return assign_node;
-    } else if (match(token_type::PLUS_EQUAL) ||
+    } 
+    
+    if (match(token_type::PLUS_EQUAL) ||
                match(token_type::MINUS_EQUAL) ||
                match(token_type::STAR_EQUAL) ||
                match(token_type::SLASH_EQUAL)) {
         token_class op = current_token();
         consume(current_token().type);
 
-        AugmentedAssignmentOp aug_assign{op, std::move(left), parse_assignment()};
+        AugmentedAssignmentOp aug_assign{.op=op, .target=std::move(left), .value=parse_assignment()};
         auto aug_assign_node = std::make_unique<ExprNode>(ExprNode{std::move(aug_assign)});
         return aug_assign_node;
     }
@@ -519,7 +541,7 @@ StmtPtr parser_class::parse_return_stmt() {
         value = parse_expression_types();
     }
 
-    ReturnStmt ret{token, std::move(value)};
+    ReturnStmt ret{.token=token, .value=std::move(value)};
     auto ret_node = std::make_unique<StmtNode>(StmtNode{std::move(ret)});
     return ret_node;
 }
@@ -557,7 +579,7 @@ StmtPtr parser_class::parse_function_def() {
     consume_line();
     Block body = parse_block();
 
-    FunctionDef func{token, std::move(params), std::move(body)};
+    FunctionDef func{.token=token, .params=std::move(params), .body=std::move(body)};
     auto func_node = std::make_unique<StmtNode>(StmtNode{std::move(func)});
     return func_node;
 }
@@ -590,7 +612,7 @@ StmtPtr parser_class::parse_class() {
 
     consume(token_type::DEDENT);
 
-    ClassDef cls{token, std::move(body)};
+    ClassDef cls{.token=token, .body=std::move(body)};
     auto cls_node = std::make_unique<StmtNode>(StmtNode{std::move(cls)});
     return cls_node;
 }
@@ -635,7 +657,7 @@ StmtPtr parser_class::parse_method() {
     consume_line();
     Block body = parse_block();
 
-    MethodDef method{token, std::move(params), std::move(body)};
+    MethodDef method{.token=token, .params=std::move(params), .body=std::move(body)};
     auto method_node = std::make_unique<StmtNode>(StmtNode{std::move(method)});
     return method_node;
 }
@@ -677,7 +699,7 @@ StmtPtr parser_class::parse_if_stmt() {
         consume_newline();
         Block elif_body = parse_block();
 
-        elifs.push_back(ElifStmt{elif_token, std::move(elif_condition), std::move(elif_body)});
+        elifs.push_back(ElifStmt{.token=elif_token, .condition=std::move(elif_condition), .body=std::move(elif_body)});
     }
 
     std::unique_ptr<ElseStmt> else_branch;
@@ -691,7 +713,7 @@ StmtPtr parser_class::parse_if_stmt() {
         else_branch = std::make_unique<ElseStmt>(else_token, std::move(else_body));
     }
 
-    IfStmt if_stmt{token, std::move(condition), std::move(body), std::move(elifs), std::move(else_branch)};
+    IfStmt if_stmt{.token=token, .condition=std::move(condition), .body=std::move(body), .elifs=std::move(elifs), .else_branch=std::move(else_branch)};
     
     auto if_node = std::make_unique<StmtNode>(StmtNode{std::move(if_stmt)});
     
@@ -707,7 +729,7 @@ StmtPtr parser_class::parse_while_stmt() {
     consume_newline();
     Block body = parse_block();
 
-    WhileStmt while_stmt{token, std::move(condition), std::move(body)};
+    WhileStmt while_stmt{.token=token, .condition=std::move(condition), .body=std::move(body)};
     auto while_node = std::make_unique<StmtNode>(StmtNode{std::move(while_stmt)});
     return while_node;
 }
@@ -716,19 +738,18 @@ StmtPtr parser_class::parse_for_stmt() {
     token_class token = current_token();
     consume(token_type::KEYWORD_FOR);
 
-    Identifier variable{current_token()};
-    if (match(token_type::IDENTIFIER)) {
-        consume(token_type::IDENTIFIER);
-    }
+    Identifier variable {current_token()};
 
+    ForStmt for_stmt{.token=token, .variable=std::move(variable)};
+    
+    consume(token_type::IDENTIFIER);
     consume(token_type::KEYWORD_IN);
 
-    auto iterable = parse_expression_types();
+    for_stmt.iterable = parse_expression_types();
 
     consume_newline();
-    Block body = parse_block();
+    for_stmt.body = parse_block();
 
-    ForStmt for_stmt{token, std::move(variable), std::move(iterable), std::move(body)};
     auto for_node = std::make_unique<StmtNode>(StmtNode{std::move(for_stmt)});
     return for_node;
 }
@@ -750,12 +771,12 @@ StmtPtr parser_class::parse_match_stmt() {
         consume_newline();
         Block case_body = parse_block();
 
-        cases.push_back(CaseStmt{case_token, std::move(pattern), std::move(case_body)});
+        cases.push_back(CaseStmt{.token=case_token, .pattern=std::move(pattern), .body=std::move(case_body)});
     }
 
     consume(token_type::DEDENT);
 
-    MatchStmt match_stmt{token, std::move(subject), std::move(cases)};
+    MatchStmt match_stmt{.token=token, .subject=std::move(subject), .cases=std::move(cases)};
     auto match_node = std::make_unique<StmtNode>(StmtNode{std::move(match_stmt)});
     return match_node;
 }
@@ -769,7 +790,7 @@ StmtPtr parser_class::parse_case() {
     consume_newline();
     Block body = parse_block();
 
-    CaseStmt case_stmt{token, std::move(pattern), std::move(body)};
+    CaseStmt case_stmt{.token=token, .pattern=std::move(pattern), .body=std::move(body)};
     auto case_node = std::make_unique<StmtNode>(StmtNode{std::move(case_stmt)});
     return case_node;
 }
@@ -778,7 +799,7 @@ ExprPtr parser_class::parse_list() {
     token_class token = current_token();
     consume(token_type::LBRACKET);
 
-    ListExpr list{token, {}};
+    ListExpr list{.token=token, .elements={}};
 
     if (match(token_type::RBRACKET)) {
         consume(token_type::RBRACKET);
@@ -788,14 +809,22 @@ ExprPtr parser_class::parse_list() {
 
     list.elements.push_back(parse_expression_types());
 
+    token_class zero_index_token = previous_token();
+
     while (match(token_type::COMMA)) {
         consume(token_type::COMMA);
 
         if (match(token_type::RBRACKET)) {
             break;
         }
-
+        
         list.elements.push_back(parse_expression_types());
+
+        token_class curr_index = previous_token();
+
+        if (zero_index_token.type != curr_index.type ) {
+            debug_syntax_error();
+        }
     }
 
     consume(token_type::RBRACKET);
@@ -807,7 +836,7 @@ ExprPtr parser_class::parse_dict() {
     token_class token = current_token();
     consume(token_type::LCBRACE);
 
-    DictExpr dict{token, {}};
+    DictExpr dict{.token=token, .entries={}};
 
     if (match(token_type::RCBRACE)) {
         consume(token_type::RCBRACE);
@@ -820,7 +849,7 @@ ExprPtr parser_class::parse_dict() {
     while (match(token_type::COLON) || match(token_type::COMMA)) {
         consume(token_type::COLON);
         auto value = parse_expression_types();
-        dict.entries.push_back({std::move(key), std::move(value)});
+        dict.entries.emplace_back(std::move(key), std::move(value));
 
         if (match(token_type::COMMA)) {
             consume(token_type::COMMA);
@@ -845,7 +874,7 @@ ExprPtr parser_class::parse_logical_and() {
         token_class op { current_token() };
         consume();
 
-        AndOp and_op{op, std::move(left), parse_equality()};
+        AndOp and_op{.op=op, .left=std::move(left), .right=parse_equality()};
         left = std::make_unique<ExprNode>(ExprNode{std::move(and_op)});
     }
 
@@ -859,7 +888,7 @@ ExprPtr parser_class::parse_logical_or() {
         token_class op { current_token() };
         consume();
 
-        OrOp or_op{op, std::move(left), parse_logical_and()};
+        OrOp or_op{.op=op, .left=std::move(left), .right=parse_logical_and()};
         left = std::make_unique<ExprNode>(ExprNode{std::move(or_op)});
     }
 

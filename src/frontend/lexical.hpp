@@ -41,8 +41,6 @@ namespace TwoPy::Frontend {
 
             /* tokenize the input strings */
             std::vector<token_class> tokenize();
-
-            std::string token_type_name(const token_class& type);
     };
 }
 

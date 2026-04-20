@@ -1,14 +1,15 @@
 #ifndef TOKEN_HPP
 #define TOKEN_HPP 
 
+#include <cstdint>
 #include <string>
-#include <unordered_map>
 #include <cstddef>
+#include <cstdlib>
 
 /* The token determines what type a certain phrase or word is going to be for a character*/
 
 namespace TwoPy::Frontend {
-    enum class token_type {
+    enum class token_type : uint8_t {
         KEYWORD_FALSE, KEYWORD_NONE, KEYWORD_TRUE,
         KEYWORD_AND, KEYWORD_AS, KEYWORD_ASSERT, KEYWORD_ASYNC, KEYWORD_AWAIT,
         KEYWORD_BREAK,

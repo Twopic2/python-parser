@@ -2,6 +2,7 @@
 #define AST_HPP
 
 #include <memory>
+#include <optional>
 #include <vector>
 #include <variant>
 #include "frontend/token.hpp"
@@ -156,6 +157,12 @@ namespace TwoPy::Frontend {
         std::vector<ExprPtr> elements;
     };
 
+    struct ListIndexExpr {
+        token_class token;
+        ExprPtr list_name;
+        ExprPtr index;
+    };
+
     struct DictExpr {
         token_class token;
         std::vector<std::pair<ExprPtr, ExprPtr>> entries;
@@ -236,7 +243,7 @@ namespace TwoPy::Frontend {
     struct ForStmt {
         token_class token;
         Identifier variable;
-        ExprPtr iterable;
+        std::optional<ExprPtr> iterable;
         Block body;
     };
 
@@ -308,6 +315,7 @@ namespace TwoPy::Frontend {
         std::variant<
             Identifier,
             CallExpr,
+            ListIndexExpr,
             ConstructorCallExpr,
             AttributeExpr,
             ListExpr,

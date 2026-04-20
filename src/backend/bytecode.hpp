@@ -7,9 +7,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <ranges>
 #include <algorithm>
-#include <any>
 
 #include "backend/value.hpp"
 #include "frontend/ast.hpp"
@@ -84,7 +82,7 @@ namespace TwoPy::Backend {
 
         // helper functions by https://craftinginterpreters.com/
         [[nodiscard]] std::size_t emit_jump(OpCode instruction) {
-            m_curr_chunk->code.push_back({instruction, 0});
+            m_curr_chunk->code.push_back({.opcode=instruction, .argument=0});
             m_curr_chunk->byte_offset += 2;
             return m_curr_chunk->byte_offset;
         }
@@ -108,10 +106,10 @@ namespace TwoPy::Backend {
                 m_curr_chunk->consts_pool.emplace_back();
             }
 
-            m_curr_chunk->code.push_back({OpCode::LOAD_CONSTANT, none_index});
+            m_curr_chunk->code.push_back({.opcode=OpCode::LOAD_CONSTANT, .argument=none_index});
             m_curr_chunk->byte_offset += 2;
 
-            m_curr_chunk->code.push_back({OpCode::RETURN});
+            m_curr_chunk->code.push_back({.opcode=OpCode::RETURN});
             m_curr_chunk->byte_offset += 2;
         }
 
